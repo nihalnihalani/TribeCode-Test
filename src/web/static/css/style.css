@@ -325,6 +325,44 @@ h1.page-title {
 }
 
 /* --- Feed/Interactions Specific --- */
+.feed-group-container {
+    margin-bottom: 3rem;
+}
+
+.feed-group-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+    position: sticky;
+    top: 0;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+    z-index: 10;
+    padding-top: 1rem;
+}
+
+.feed-group-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-main);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.feed-group-badge {
+    font-size: 0.75rem;
+    background: rgba(59, 130, 246, 0.1);
+    color: #60a5fa;
+    padding: 2px 8px;
+    border-radius: 100px;
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    margin-left: 0.5rem;
+}
+
 .feed-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));

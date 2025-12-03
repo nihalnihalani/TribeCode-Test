@@ -20,7 +20,8 @@ def migrate():
         "author_handle": "TEXT",
         "post_url": "TEXT",
         "metrics_json": "TEXT",
-        "media_url": "TEXT"
+        "media_url": "TEXT",
+        "tag": "TEXT"
     }
     
     for col, dtype in new_columns.items():

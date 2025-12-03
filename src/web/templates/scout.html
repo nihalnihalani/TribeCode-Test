@@ -45,7 +45,24 @@
                 </div>
             </div>
 
-            <input type="hidden" name="platform" value="all">
+            <div class="form-group" style="background: rgba(59, 130, 246, 0.05); padding: 1rem; border-radius: 8px; border: 1px solid rgba(59, 130, 246, 0.2);">
+                <label class="form-label" style="color: var(--primary-color); margin-bottom: 0.5rem;">Auto-Engagement</label>
+                <div style="display: flex; gap: 1.5rem;">
+                    <label style="display: flex; align-items: center; cursor: pointer;">
+                        <input type="checkbox" name="auto_like" value="true" style="margin-right: 8px; accent-color: var(--primary-color);">
+                        <span style="font-size: 0.9rem;">Auto Like</span>
+                    </label>
+                    <label style="display: flex; align-items: center; cursor: pointer;">
+                        <input type="checkbox" name="auto_comment" value="true" style="margin-right: 8px; accent-color: var(--primary-color);">
+                        <span style="font-size: 0.9rem;">Auto Comment</span>
+                    </label>
+                </div>
+                <p class="text-muted text-sm" style="margin-top: 0.5rem; margin-bottom: 0; font-size: 0.8rem;">
+                    If enabled, the bot will stay logged in and engage with posts immediately after discovery.
+                </p>
+            </div>
+
+            <input type="hidden" name="platform" value="twitter">
             <button type="submit" class="btn btn-secondary" style="width: 100%;">
                 Launch Scan
             </button>
@@ -68,8 +85,9 @@
             
             <form action="/scout" method="post" onsubmit="showLoading(this)">
                 <input type="hidden" name="query" value="auto">
-                <input type="hidden" name="platform" value="all">
+                <input type="hidden" name="platform" value="twitter">
                 <input type="hidden" name="limit" value="30">
+                <input type="hidden" name="auto_like" value="true">
                 
                 <button type="submit" class="btn btn-primary" style="width: 100%; padding: 1rem; font-size: 1.1rem; justify-content: center;">
                     Activate Auto-Pilot
