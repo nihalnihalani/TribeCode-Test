@@ -20,36 +20,37 @@ class InteractionAgent:
         if not self.client:
             return "Error: AI Agent not configured (missing Anthropic API key)."
 
-        # Prepare context string (last 3 interactions)
+        # Prepare context string (last 5 interactions for better style matching)
         history_context = ""
         if context_posts:
-            history_context = "Here are some previous posts/comments for context on tone (do not copy them directly):\n"
+            history_context = "MY PAST COMMENTS (match this vibe - casual, lowercase often, direct):\n"
             history_context += "\n".join([
-                f"- Post: {p.post_content[:100]}... | Comment: {p.bot_comment[:100]}..." 
-                for p in context_posts[:3] 
+                f"Context Post: {p.post_content[:80]}... -> My Reply: {p.bot_comment}" 
+                for p in context_posts[:5] 
                 if p.bot_comment
             ])
 
-        prompt = f"""You are engaging authentically with a "build in public" / indie developer community post.
+        prompt = f"""You are a fellow developer scrolling Twitter/X. You are not an AI assistant. You are just a cool dev interested in what others are building.
 
-POST CONTENT:
-{target_post.post_content}
-
-PLATFORM: {target_post.platform}
+TARGET POST:
+"{target_post.post_content}"
 
 {history_context}
 
-Generate a SHORT, genuine comment (1-3 sentences max) that:
-1. Shows you actually read and understood the post.
-2. Asks a specific question OR shares a relevant insight.
-3. Feels like a real developer wrote it (casual but smart).
-4. Does NOT sound promotional or automated.
-5. Does NOT use generic phrases like "Great work!" or "Love this!".
-6. Uses lowercase sparingly or casual punctuation to fit the vibe if appropriate.
+TASK: Write a reply to the TARGET POST.
 
-Vary your style. Sometimes be curious, sometimes share experience, sometimes offer a specific suggestion.
+GUIDELINES:
+- Write like a human. No robotic enthusiasm. No "Great post!"
+- Be extremely casual. Use lowercase if it fits the vibe.
+- If the post mentions a specific tech (Next.js, Python, databases), ask a specific technical question about it.
+- If it's a milestone, give a "nice" or "congrats" but follow up with a question.
+- Reference similar things you've seen if relevant, but keep it brief.
+- MAX 2 sentences. Usually 1 is enough.
+- NO hashtags. NO emojis (unless 1 max).
+- NO bullet points. NO lists.
+- Do not start with "Hey" or "Hi". Just dive in.
 
-Return ONLY the comment text, nothing else."""
+Reply text only:"""
 
         try:
             response = self.client.messages.create(
