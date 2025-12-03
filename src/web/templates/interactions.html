@@ -15,22 +15,28 @@
         <div class="post-header">
             <div style="display: flex; align-items: center;">
                 <!-- Improved Avatar Logic -->
-                <div style="width: 42px; height: 42px; border-radius: 50%; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; margin-right: 1rem; border: 1px solid var(--border-color);">
+                <div style="width: 42px; height: 42px; border-radius: 50%; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; margin-right: 1rem; border: 1px solid var(--border-color); overflow: hidden;">
                     {% if interaction.platform == 'Reddit' %}
                         <img src="https://img.icons8.com/?id=13642&format=png&size=24" alt="Reddit">
                     {% else %}
+                        <!-- Use stored avatar or default -->
                         <img src="https://img.icons8.com/?id=ClbD5JTFM7FA&format=png&size=24" alt="X">
                     {% endif %}
                 </div>
                 <div>
                     <div style="font-weight: 700; color: var(--text-main); font-size: 1rem;">
-                        {% if interaction.platform == 'Reddit' %}
+                        {% if interaction.author_name %}
+                            {{ interaction.author_name }}
+                        {% elif interaction.platform == 'Reddit' %}
                             u/AnonBuilder
                         {% else %}
-                            @FounderX
+                            Unknown User
                         {% endif %}
                     </div>
-                    <div class="text-muted text-sm">
+                    <div class="text-muted text-sm" style="display: flex; gap: 0.5rem;">
+                        {% if interaction.author_handle %}
+                            <span>{{ interaction.author_handle }}</span> • 
+                        {% endif %}
                         {{ interaction.created_at.strftime('%b %d • %H:%M') }}
                     </div>
                 </div>
@@ -40,24 +46,46 @@
                 {% if interaction.platform == 'Reddit' %}
                     <img src="https://img.icons8.com/?id=13642&format=png&size=14"> Reddit
                 {% else %}
-                    <img src="https://img.icons8.com/?id=ClbD5JTFM7FA&format=png&size=14"> X / Twitter
+                    <img src="https://img.icons8.com/?id=ClbD5JTFM7FA&format=png&size=14"> X
                 {% endif %}
             </span>
         </div>
 
         <div class="post-content">
             {{ interaction.post_content }}
+            
+            {% if interaction.media_url %}
+            <div style="margin-top: 1rem; border-radius: 12px; overflow: hidden; border: 1px solid var(--border-color);">
+                <img src="{{ interaction.media_url }}" style="width: 100%; display: block;">
+            </div>
+            {% endif %}
         </div>
 
+        <!-- Metrics Bar -->
+        {% if interaction.metrics %}
+        <div style="padding: 0 1.5rem 1rem 1.5rem; display: flex; gap: 1.5rem; color: var(--text-muted); font-size: 0.85rem;">
+            <span title="Replies"><img src="https://img.icons8.com/?id=143&format=png&size=14" style="filter: invert(0.6); margin-right: 4px; vertical-align: text-bottom;"> {{ interaction.metrics.get('replies', 0) }}</span>
+            <span title="Retweets"><img src="https://img.icons8.com/?id=594&format=png&size=14" style="filter: invert(0.6); margin-right: 4px; vertical-align: text-bottom;"> {{ interaction.metrics.get('retweets', 0) }}</span>
+            <span title="Likes"><img src="https://img.icons8.com/?id=87&format=png&size=14" style="filter: invert(0.6); margin-right: 4px; vertical-align: text-bottom;"> {{ interaction.metrics.get('likes', 0) }}</span>
+        </div>
+        {% endif %}
+
         <div class="post-actions">
-            {% if interaction.url %}
-            <a href="{{ interaction.url }}" target="_blank" class="btn btn-secondary btn-sm">
-                Open Link ↗
+            {% if interaction.post_url %}
+            <a href="{{ interaction.post_url }}" target="_blank" class="btn btn-secondary btn-sm">
+                View ↗
             </a>
             {% endif %}
             
             <div style="flex-grow: 1;"></div>
             
+            <form action="/interactions/{{ interaction.id }}/comment" method="post" style="margin-right: 0.5rem;">
+                <button type="submit" class="btn btn-primary btn-sm">
+                    <img src="https://img.icons8.com/?id=143&format=png&size=16" style="filter: invert(0);">
+                    Comment
+                </button>
+            </form>
+
             <form action="/interactions/{{ interaction.id }}/like" method="post" class="like-form">
                 <button type="submit" class="btn btn-secondary btn-sm" style="color: var(--danger-color); border-color: rgba(239, 68, 68, 0.3); background: rgba(239, 68, 68, 0.05);">
                     <img src="https://img.icons8.com/?id=87&format=png&size=16" style="filter: invert(35%) sepia(85%) saturate(3000%) hue-rotate(340deg);">

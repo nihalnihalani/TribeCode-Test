@@ -13,6 +13,7 @@ class TwitterScout:
     def fetch_posts(self, keywords: List[str], limit: int = 10) -> List[Dict]:
         """
         Fetches posts using Playwright with a persistent profile.
+        Extracts: text, author, handle, metrics, media.
         """
         print(f"\n[Twitter Scout] Fetching posts for keywords: {keywords}")
         
@@ -62,8 +63,6 @@ class TwitterScout:
                         
                     try:
                         # Extract ID from anchor href (usually /username/status/ID)
-                        # There are multiple links, find the one with /status/
-                        # Better: User-Name -> time element -> href
                         time_el = tweet_el.query_selector('time')
                         if not time_el:
                             continue
@@ -84,27 +83,71 @@ class TwitterScout:
                             continue
                             
                         # href format: /Username/status/123456789
-                        tweet_id = href.split('/status/')[-1].split('?')[0]
+                        # Extract handle from href
+                        parts = href.split('/')
+                        if len(parts) >= 2:
+                            handle = "@" + parts[1]
+                            tweet_id = href.split('/status/')[-1].split('?')[0]
+                            post_url = f"https://twitter.com{href}"
+                        else:
+                            continue
                         
                         # Extract Text
                         text_el = tweet_el.query_selector('div[data-testid="tweetText"]')
                         text = text_el.inner_text() if text_el else "[No Text / Image Only]"
                         
-                        # Extract Author (Handle)
+                        # Extract Author Name
                         user_el = tweet_el.query_selector('div[data-testid="User-Name"]')
-                        author = user_el.inner_text().split('\n')[0] if user_el else "Unknown"
+                        author_name = "Unknown"
+                        if user_el:
+                            # usually "Name\n@handle\n·\nTime"
+                            raw_user_text = user_el.inner_text()
+                            author_name = raw_user_text.split('\n')[0]
+
+                        # Extract Metrics (Likes, Retweets, Replies)
+                        # Selectors: [data-testid="reply"], [data-testid="retweet"], [data-testid="like"]
+                        # They usually contain an aria-label with the count, or text inside.
+                        metrics = {"replies": 0, "retweets": 0, "likes": 0}
+                        
+                        def get_metric(testid):
+                            el = tweet_el.query_selector(f'[data-testid="{testid}"]')
+                            if el:
+                                txt = el.inner_text() or "0"
+                                # Convert "1.2K" to 1200 if needed, but storing string is fine for display
+                                return txt.strip()
+                            return "0"
+
+                        metrics["replies"] = get_metric("reply")
+                        metrics["retweets"] = get_metric("retweet")
+                        metrics["likes"] = get_metric("like")
+                        
+                        # Extract Media (First Image)
+                        media_url = None
+                        img_el = tweet_el.query_selector('div[data-testid="tweetPhoto"] img')
+                        if img_el:
+                            media_url = img_el.get_attribute('src')
 
                         # Deduplication & Save
-                        # Note: we save with ARCHIVED status initially
                         saved = save_interaction(
                             platform="Twitter",
                             external_post_id=tweet_id,
                             post_content=text,
-                            status="ARCHIVED"
+                            status="ARCHIVED",
+                            author_name=author_name,
+                            author_handle=handle,
+                            post_url=post_url,
+                            metrics=metrics,
+                            media_url=media_url
                         )
                         
-                        found_tweets.append({"id": tweet_id, "text": text, "author": author})
-                        print(f"  Archived Tweet {tweet_id}: {text[:30]}...")
+                        found_tweets.append({
+                            "id": tweet_id, 
+                            "text": text, 
+                            "author": author_name,
+                            "handle": handle,
+                            "metrics": metrics
+                        })
+                        print(f"  Archived Tweet {tweet_id} by {handle}: {text[:30]}...")
                         count += 1
                         
                     except Exception as e:

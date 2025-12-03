@@ -1,6 +1,7 @@
 import os
 from datetime import datetime
-from typing import Optional, List
+from typing import Optional, List, Dict
+import json
 from sqlalchemy import create_engine, Column, Integer, String, DateTime, Text
 from sqlalchemy.orm import declarative_base, sessionmaker
 from dotenv import load_dotenv
@@ -19,12 +20,29 @@ class Interaction(Base):
     platform = Column(String, nullable=False)  # 'Reddit', 'Twitter', etc.
     external_post_id = Column(String, unique=True, nullable=False)
     post_content = Column(Text, nullable=True)
+    
+    # New Fields for "All Details"
+    author_name = Column(String, nullable=True)
+    author_handle = Column(String, nullable=True)
+    post_url = Column(String, nullable=True)
+    metrics_json = Column(Text, nullable=True) # JSON string for likes, retweets, etc.
+    media_url = Column(String, nullable=True)
+    
     bot_comment = Column(Text, nullable=True)
     status = Column(String, default='ARCHIVED') # 'PLANNED', 'POSTED', 'ARCHIVED'
     created_at = Column(DateTime, default=datetime.utcnow)
 
     def __repr__(self):
         return f"<Interaction(platform='{self.platform}', id='{self.external_post_id}', status='{self.status}')>"
+    
+    @property
+    def metrics(self):
+        if self.metrics_json:
+            try:
+                return json.loads(self.metrics_json)
+            except:
+                return {}
+        return {}
 
 # Setup Engine and Session
 engine = create_engine(DATABASE_URL)
@@ -44,17 +62,35 @@ def get_db():
 
 # --- Archivist Helper Functions ---
 
-def save_interaction(platform: str, external_post_id: str, post_content: str, status: str = "ARCHIVED", bot_comment: Optional[str] = None):
+def save_interaction(
+    platform: str, 
+    external_post_id: str, 
+    post_content: str, 
+    status: str = "ARCHIVED", 
+    bot_comment: Optional[str] = None,
+    author_name: Optional[str] = None,
+    author_handle: Optional[str] = None,
+    post_url: Optional[str] = None,
+    metrics: Optional[Dict] = None,
+    media_url: Optional[str] = None
+):
     """Saves a new interaction to the database."""
     session = SessionLocal()
     try:
-        # Check if already exists to avoid UniqueConstraintError, though check_deduplication should be used first.
         existing = session.query(Interaction).filter_by(external_post_id=external_post_id).first()
+        
+        metrics_str = json.dumps(metrics) if metrics else None
+        
         if existing:
-            # Update if exists? Or just return? For now, we update fields if it exists, or skip.
-            # Let's treat it as an update/upsert if it exists, or just skip if immutable.
-            # The prompt says "Archive with local db", so let's ensure it's saved.
-            print(f"Interaction {external_post_id} already exists. Skipping creation.")
+            print(f"Interaction {external_post_id} already exists. Updating.")
+            # Update fields if they are provided (enrichment)
+            if author_name: existing.author_name = author_name
+            if author_handle: existing.author_handle = author_handle
+            if post_url: existing.post_url = post_url
+            if metrics_str: existing.metrics_json = metrics_str
+            if media_url: existing.media_url = media_url
+            
+            session.commit()
             return existing
         
         new_interaction = Interaction(
@@ -62,7 +98,12 @@ def save_interaction(platform: str, external_post_id: str, post_content: str, st
             external_post_id=external_post_id,
             post_content=post_content,
             bot_comment=bot_comment,
-            status=status
+            status=status,
+            author_name=author_name,
+            author_handle=author_handle,
+            post_url=post_url,
+            metrics_json=metrics_str,
+            media_url=media_url
         )
         session.add(new_interaction)
         session.commit()
@@ -91,4 +132,3 @@ def get_all_interactions(limit: int = 100) -> List[Interaction]:
         return session.query(Interaction).order_by(Interaction.created_at.desc()).limit(limit).all()
     finally:
         session.close()
-
