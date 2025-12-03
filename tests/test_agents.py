@@ -131,33 +131,80 @@ def test_twitter_fetch_posts(mock_playwright, db_session):
     assert saved_posts[0].external_post_id == "tweet_456"
     assert saved_posts[0].platform == "Twitter"
 
+def test_twitter_ensure_logged_in(mock_playwright):
+    """Test login check logic."""
+    scout = TwitterScout()
+    mock_page = MagicMock()
+    
+    # Case 1: Already logged in (Home link found)
+    mock_page.url = "https://twitter.com/home"
+    mock_page.query_selector.return_value = True # Found element
+    
+    scout.ensure_logged_in(mock_page)
+    # Should not call login() (which we can't easily check without mocking scout.login, 
+    # but we can check if it stayed on home or didn't fill forms)
+    # Better approach: Mock scout.login
+    
+    with patch.object(scout, 'login') as mock_login:
+        scout.ensure_logged_in(mock_page)
+        mock_login.assert_not_called()
+        
+        # Case 2: Redirected to login
+        mock_page.url = "https://twitter.com/login"
+        scout.ensure_logged_in(mock_page)
+        mock_login.assert_called()
+
+def test_twitter_skip_image(mock_playwright):
+    """Test skipping tweets with images."""
+    scout = TwitterScout()
+    
+    # Mock Context
+    mock_p = mock_playwright.return_value.__enter__.return_value
+    mock_browser = mock_p.chromium.launch_persistent_context.return_value
+    mock_page = mock_browser.new_page.return_value
+    
+    # Mock Tweet with Image
+    mock_tweet = MagicMock()
+    mock_tweet.query_selector.side_effect = lambda s: MagicMock() if s == 'div[data-testid="tweetPhoto"] img' else None
+    
+    mock_page.query_selector_all.return_value = [mock_tweet]
+    
+    # Mock ensure_logged_in to avoid side effects
+    with patch.object(scout, 'ensure_logged_in'):
+        posts = scout.fetch_posts(["test"], limit=1)
+        assert len(posts) == 0 # Should skip
+
 # --- InteractionAgent Tests ---
 
 @pytest.fixture
-def mock_openai(mock_env):
-    with patch("src.agents.interaction_agent.OpenAI") as mock:
+def mock_anthropic(mock_env):
+    with patch("src.agents.interaction_agent.anthropic.Anthropic") as mock:
         yield mock
 
-def test_agent_generate_comment(mock_openai, mock_env):
+def test_agent_generate_comment(mock_anthropic, mock_env):
     """Test generating a comment."""
     agent = InteractionAgent()
     
     # Mock response
-    mock_response = MagicMock()
-    mock_response.choices[0].message.content = "Generated Comment"
-    agent.client.chat.completions.create.return_value = mock_response
+    mock_message = MagicMock()
+    mock_message.content = [MagicMock(text="Generated Comment")]
+    agent.client.messages.create.return_value = mock_message
     
-    target = Interaction(platform="Reddit", external_post_id="1", post_content="Target post")
-    context = [Interaction(platform="Reddit", external_post_id="2", post_content="Context post")]
+    target = Interaction(platform="Twitter", external_post_id="1", post_content="Target post")
+    context = [Interaction(platform="Twitter", external_post_id="2", post_content="Context post", bot_comment="Context comment")]
     
     comment = agent.generate_comment(target, context)
     
     assert comment == "Generated Comment"
-    agent.client.chat.completions.create.assert_called_once()
+    agent.client.messages.create.assert_called_once()
+    
+    # Verify model name
+    call_args = agent.client.messages.create.call_args
+    assert call_args.kwargs['model'] == "claude-haiku-4-5-20251001"
 
 def test_agent_no_key(monkeypatch):
     """Test agent without API key."""
-    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
     agent = InteractionAgent()
     assert agent.client is None
     
