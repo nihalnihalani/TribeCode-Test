@@ -18,7 +18,7 @@
             <h3 style="margin:0; font-size: 1.1rem;">Manual Target</h3>
         </div>
 
-        <form action="/scout" method="post">
+        <form action="/scout" method="post" onsubmit="showLoading(this)">
             <div class="form-group">
                 <label class="form-label">Target Keywords</label>
                 <input type="text" name="query" class="form-control" placeholder="e.g. 'AI Agents', 'SaaS'" required>
@@ -53,7 +53,7 @@
                 Let BuildRadar automatically detect trending "Build in Public" topics and fetch high-signal posts for you.
             </p>
             
-            <form action="/scout" method="post">
+            <form action="/scout" method="post" onsubmit="showLoading(this)">
                 <input type="hidden" name="query" value="auto">
                 <input type="hidden" name="platform" value="all">
                 <input type="hidden" name="limit" value="30">
@@ -76,4 +76,38 @@
         </div>
     </div>
 </div>
+
+<!-- Loading Overlay -->
+<div id="loadingOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); z-index: 9999; align-items: center; justify-content: center; flex-direction: column;">
+    <div style="width: 64px; height: 64px; border: 4px solid rgba(59, 130, 246, 0.3); border-top: 4px solid #3b82f6; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 1.5rem;"></div>
+    <h3 style="color: white; margin-bottom: 0.5rem;">Scouting Mission Active...</h3>
+    <p style="color: var(--text-muted);">Deploying agents to Twitter/X. This may take a few seconds.</p>
+</div>
+
+<style>
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+</style>
+
+<script>
+function showLoading(form) {
+    // Since the backend is using background_tasks for the actual heavy lifting, 
+    // the response will be immediate (Redirect). 
+    // So showing a full blocking loader might be misleading if it disappears instantly.
+    // However, user asked for "loading screen or something".
+    // Let's show a toast or just a quick visual feedback.
+    
+    // Actually, if we want to block UI while submitting:
+    const btn = form.querySelector('button[type="submit"]');
+    const originalText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<span style="display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top: 2px solid white; border-radius: 50%; animation: spin 1s linear infinite; margin-right: 8px;"></span> Launching...';
+    
+    // Note: Because the server returns a redirect almost immediately (background task),
+    // this state will only last for the duration of the network request (ms).
+    // Ideally, we would show a notification on the NEXT page saying "Scout started in background".
+}
+</script>
 {% endblock %}
