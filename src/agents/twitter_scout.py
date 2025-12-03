@@ -313,9 +313,15 @@ class TwitterScout:
                             metrics["retweets"] = get_metric("retweet")
                             metrics["likes"] = get_metric("like")
                             
+                            # Check for image/media
                             media_url = None
                             img_el = tweet_el.query_selector('div[data-testid="tweetPhoto"] img')
                             if img_el: media_url = img_el.get_attribute('src')
+                            
+                            # If we are skipping images, check now
+                            if media_url:
+                                print(f"  Skipping Tweet {tweet_id} (Has Image)")
+                                continue
 
                             save_interaction(
                                 platform="Twitter",
@@ -450,6 +456,20 @@ class TwitterScout:
                                 if text_el: text = text_el.inner_text()
                             except: pass
                             
+                            # Check for Media on single page view
+                            has_media = False
+                            if page.query_selector('div[data-testid="tweetPhoto"]'):
+                                has_media = True
+                            
+                            if has_media and auto_comment:
+                                print(f"  Skipping comment on {tweet_id} due to image/media.")
+                                # We can still like it though? User said "don't post a comment or reply"
+                                # Let's skip the whole engagement if it has media to be safe, or just comment?
+                                # "if the tweet has reference to image don't post a comment or reply"
+                                # Implementation: We will still Archive it, maybe Like it? 
+                                # Let's assume we skip comment only.
+                                auto_comment = False 
+
                             # Save/Update DB first
                             interaction = save_interaction(
                                 platform="Twitter",
