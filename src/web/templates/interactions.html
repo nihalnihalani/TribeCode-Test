@@ -1,90 +1,126 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div style="margin-bottom: 2rem;">
-    <h1 class="page-title">Feed Archive</h1>
-    <p class="text-muted text-sm">Review and engage with scouted content.</p>
+<div class="header-bar">
+    <div>
+        <h1 class="page-title">Feed Archive</h1>
+        <p class="text-muted text-sm">Signal detected across platforms.</p>
+    </div>
+    <a href="/scout" class="btn btn-primary btn-sm">
+        <img src="https://img.icons8.com/?id=WwWusvLMTFd7&format=png&size=16" style="filter: invert(1); margin-right: 6px;">
+        New Mission
+    </a>
+</div>
+
+<!-- Filter Tabs -->
+<div class="filter-tabs">
+    <a href="/interactions" class="filter-tab {{ 'active' if not current_filter else '' }}">All Signal</a>
+    <a href="/interactions?platform=Reddit" class="filter-tab {{ 'active' if current_filter == 'Reddit' else '' }}">Reddit</a>
+    <a href="/interactions?platform=Twitter" class="filter-tab {{ 'active' if current_filter == 'Twitter' else '' }}">X Feed</a>
 </div>
 
 <div class="feed-grid">
     {% for interaction in interactions %}
-    <article class="post-card">
+    <article class="post-card {{ 'tweet-card' if interaction.platform == 'Twitter' else '' }}">
         <div class="post-header">
             <div style="display: flex; align-items: center;">
-                <div style="width: 40px; height: 40px; border-radius: 50%; background: {{ '#ffedd5' if interaction.platform == 'Reddit' else '#e0f2fe' }}; display: flex; align-items: center; justify-content: center; margin-right: 1rem;">
+                <!-- Avatar -->
+                <div style="width: 40px; height: 40px; border-radius: 50%; background: {{ 'rgba(255, 69, 0, 0.1)' if interaction.platform == 'Reddit' else 'rgba(29, 161, 242, 0.1)' }}; display: flex; align-items: center; justify-content: center; margin-right: 0.75rem;">
                      {% if interaction.platform == 'Reddit' %}
                         <img src="https://img.icons8.com/?id=118637&format=png&size=24">
                     {% else %}
                         <img src="https://img.icons8.com/?id=118638&format=png&size=24">
                     {% endif %}
                 </div>
+                <!-- User Info -->
                 <div>
-                    <div style="font-weight: 700; color: var(--text-main); font-size: 0.95rem;">
-                        {{ "u/Redditor" if interaction.platform == 'Reddit' else "@TwitterUser" }}
+                    <div style="font-weight: 700; color: var(--text-main); font-size: 0.95rem; line-height: 1.2;">
+                        {{ "u/UnknownRedditor" if interaction.platform == 'Reddit' else "X User" }}
                     </div>
-                    <div style="font-size: 0.75rem; color: var(--text-muted);">
-                        {{ interaction.created_at.strftime('%b %d • %H:%M') }}
+                    <div style="font-size: 0.8rem; color: var(--text-muted);">
+                        {{ interaction.created_at.strftime('%b %d') }} 
+                        {% if interaction.platform == 'Twitter' %}
+                        <span style="margin: 0 4px;">·</span> @handle
+                        {% endif %}
                     </div>
                 </div>
             </div>
-            <span class="platform-badge {{ interaction.platform.lower() }}">
-                {{ interaction.platform }}
-            </span>
+            
+            <!-- Platform Badge / Actions -->
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <span class="platform-badge {{ interaction.platform.lower() }}">
+                    {{ interaction.platform }}
+                </span>
+            </div>
         </div>
 
         <div class="post-content">
             {{ interaction.post_content }}
         </div>
         
+        <!-- Bot Reply Context -->
         {% if interaction.bot_comment %}
         <div style="padding: 0 1.25rem 1.25rem;">
-            <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1rem;">
+            <div style="background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.2); border-radius: var(--radius-md); padding: 1rem;">
                 <div style="display: flex; align-items: center; margin-bottom: 0.5rem;">
                     <div style="width: 20px; height: 20px; background: var(--primary-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 0.5rem;">
                         <img src="https://img.icons8.com/?id=3104&format=png&size=12" style="filter: invert(1);">
                     </div>
-                    <span style="font-weight: 600; font-size: 0.85rem; color: var(--primary-color);">AI Reply Sent</span>
+                    <span style="font-weight: 600; font-size: 0.85rem; color: var(--primary-color);">AI Agent Replied</span>
                 </div>
-                <p style="font-size: 0.9rem; color: var(--text-main); margin: 0;">{{ interaction.bot_comment }}</p>
+                <p style="font-size: 0.9rem; color: var(--text-main); margin: 0; opacity: 0.9;">{{ interaction.bot_comment }}</p>
             </div>
         </div>
         {% endif %}
 
+        <!-- Action Bar -->
         <div class="post-actions">
+            <div style="color: var(--text-muted); font-size: 0.85rem; display: flex; gap: 1rem; flex-grow: 1;">
+                <span title="Views"><img src="https://img.icons8.com/?id=85185&format=png&size=14" style="filter: invert(0.5); vertical-align: middle;"> 1.2k</span>
+                <span title="Likes"><img src="https://img.icons8.com/?id=87&format=png&size=14" style="filter: invert(0.5); vertical-align: middle;"> --</span>
+            </div>
+
             {% if interaction.url %}
-            <a href="{{ interaction.url }}" target="_blank" class="btn btn-secondary btn-sm" style="color: var(--text-muted);">
-                <img src="https://img.icons8.com/?id=85826&format=png&size=16" style="opacity: 0.6;"> Open
+            <a href="{{ interaction.url }}" target="_blank" class="btn-icon" style="width: 32px; height: 32px; padding: 0;" title="Open External">
+                <img src="https://img.icons8.com/?id=85826&format=png&size=16">
             </a>
             {% endif %}
             
             {% if not interaction.bot_comment %}
-            <div style="flex-grow: 1;"></div> <!-- Spacer -->
-            
             <form action="/interactions/{{ interaction.id }}/like" method="post" class="like-form">
-                <button type="submit" class="btn btn-secondary btn-sm" title="Like on Platform">
-                    <img src="https://img.icons8.com/?id=87&format=png&size=16" style="opacity: 0.6;"> Like
+                <button type="submit" class="btn-icon" style="width: 32px; height: 32px; padding: 0;" title="Like Post">
+                    <img src="https://img.icons8.com/?id=87&format=png&size=16">
                 </button>
             </form>
-            <form action="/interactions/{{ interaction.id }}/comment" method="post" class="like-form" style="margin-left: 0.5rem;">
+            <form action="/interactions/{{ interaction.id }}/comment" method="post" class="like-form">
                 <button type="submit" class="btn btn-primary btn-sm">
-                    <img src="https://img.icons8.com/?id=11669&format=png&size=16" style="filter: invert(1);">
-                    AI Reply
+                    <img src="https://img.icons8.com/?id=11669&format=png&size=16" style="filter: invert(1); margin-right: 4px;">
+                    Reply
                 </button>
             </form>
             {% else %}
-             <div style="flex-grow: 1;"></div>
-             <button class="btn btn-sm" disabled style="background: #dcfce7; color: #166534; border: none; opacity: 1;">
-                <img src="https://img.icons8.com/?id=sz8cPVwzLrLD&format=png&size=16" style="margin-right: 6px;"> Actioned
-             </button>
+             <span style="color: var(--success-color); font-size: 0.85rem; font-weight: 600; display: flex; align-items: center;">
+                <img src="https://img.icons8.com/?id=sz8cPVwzLrLD&format=png&size=16" style="margin-right: 4px;"> Done
+             </span>
             {% endif %}
         </div>
     </article>
     {% else %}
-    <div style="grid-column: 1 / -1; text-align: center; padding: 4rem;">
-        <img src="https://img.icons8.com/?id=10601&format=png&size=64" style="opacity: 0.2; margin-bottom: 1.5rem;">
-        <h3 style="color: var(--text-muted);">No interactions yet</h3>
-        <p style="color: var(--text-light); margin-bottom: 2rem;">Run a scout mission to populate your feed.</p>
-        <a href="/scout" class="btn btn-primary">Launch Scout</a>
+    <div style="grid-column: 1 / -1; text-align: center; padding: 6rem 2rem;">
+        <div style="background: var(--bg-input); width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
+             <img src="https://img.icons8.com/?id=10601&format=png&size=40" style="opacity: 0.3; filter: invert(1);">
+        </div>
+        <h3 style="color: var(--text-muted);">No Signal Found</h3>
+        <p style="color: var(--text-light); margin-bottom: 2rem; max-width: 400px; margin-left: auto; margin-right: auto;">
+            {% if current_filter %}
+            No interactions found for <strong>{{ current_filter }}</strong>. Try running a dedicated scout mission.
+            {% else %}
+            Your archive is empty. Deploy a scout to populate your feed.
+            {% endif %}
+        </p>
+        <a href="/scout" class="btn btn-primary">
+            Launch {{ current_filter if current_filter else 'New' }} Mission
+        </a>
     </div>
     {% endfor %}
 </div>

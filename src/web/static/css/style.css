@@ -1,28 +1,29 @@
 :root {
-    /* Modern SaaS Color Palette (Tailwind-inspired) */
-    --primary-color: #4f46e5; /* Indigo 600 */
-    --primary-hover: #4338ca; /* Indigo 700 */
-    --secondary-color: #64748b; /* Slate 500 */
+    /* Modern Dark SaaS Color Palette */
+    --primary-color: #6366f1; /* Indigo 500 */
+    --primary-hover: #4f46e5; /* Indigo 600 */
+    --secondary-color: #94a3b8; /* Slate 400 */
     
-    --bg-body: #f8fafc; /* Slate 50 */
-    --bg-card: #ffffff;
-    --bg-sidebar: #0f172a; /* Slate 900 */
+    --bg-body: #0f172a; /* Slate 900 */
+    --bg-card: #1e293b; /* Slate 800 */
+    --bg-sidebar: #020617; /* Slate 950 */
+    --bg-input: #334155; /* Slate 700 */
     
-    --text-main: #0f172a; /* Slate 900 */
-    --text-muted: #64748b; /* Slate 500 */
-    --text-light: #94a3b8; /* Slate 400 */
+    --text-main: #f8fafc; /* Slate 50 */
+    --text-muted: #94a3b8; /* Slate 400 */
+    --text-light: #64748b; /* Slate 500 */
     --text-on-dark: #f1f5f9;
     
-    --border-color: #e2e8f0; /* Slate 200 */
+    --border-color: #334155; /* Slate 700 */
     --border-focus: #818cf8; /* Indigo 400 */
     
     --success-color: #10b981;
     --warning-color: #f59e0b;
     --danger-color: #ef4444;
     
-    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.2);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(0, 0, 0, 0.2);
     
     --radius-sm: 0.375rem;
     --radius-md: 0.5rem;
@@ -57,6 +58,7 @@ body {
     height: 100vh;
     z-index: 50;
     transition: width 0.3s ease;
+    border-right: 1px solid var(--border-color);
 }
 
 .brand {
@@ -67,7 +69,7 @@ body {
     align-items: center;
     gap: 0.75rem;
     color: #fff;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
+    border-bottom: 1px solid var(--border-color);
 }
 
 .nav-links {
@@ -84,7 +86,7 @@ body {
     display: flex;
     align-items: center;
     padding: 0.75rem 1rem;
-    color: #94a3b8;
+    color: var(--text-muted);
     text-decoration: none;
     border-radius: var(--radius-md);
     transition: all 0.2s;
@@ -107,11 +109,12 @@ body {
     height: 20px;
     margin-right: 12px;
     opacity: 0.7;
-    filter: grayscale(100%) brightness(200%); /* Make icons white-ish */
+    filter: invert(0.8);
 }
 
 .nav-item a.active img, .nav-item a:hover img {
     opacity: 1;
+    filter: invert(1);
 }
 
 /* --- Main Content --- */
@@ -166,29 +169,29 @@ h1.page-title {
 .btn-primary {
     background-color: var(--primary-color);
     color: white;
-    box-shadow: 0 1px 2px 0 rgba(79, 70, 229, 0.4);
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.2);
 }
 
 .btn-primary:hover {
     background-color: var(--primary-hover);
     transform: translateY(-1px);
-    box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.5);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
 }
 
 .btn-secondary {
-    background-color: white;
+    background-color: var(--bg-card);
     border-color: var(--border-color);
     color: var(--text-main);
     box-shadow: var(--shadow-sm);
 }
 
 .btn-secondary:hover {
-    background-color: #f8fafc;
-    border-color: #cbd5e1;
+    background-color: var(--border-color);
+    border-color: #475569;
 }
 
 .btn-icon {
-    background: white;
+    background: var(--bg-card);
     border: 1px solid var(--border-color);
     padding: 0.5rem;
     border-radius: 50%;
@@ -201,7 +204,12 @@ h1.page-title {
 }
 
 .btn-icon:hover {
-    background: #f1f5f9;
+    background: var(--border-color);
+}
+
+.btn-icon img {
+    filter: invert(1);
+    opacity: 0.8;
 }
 
 /* Cards */
@@ -224,7 +232,7 @@ h1.page-title {
     margin-bottom: 0.5rem;
     font-size: 0.875rem;
     font-weight: 500;
-    color: var(--text-main);
+    color: var(--text-muted);
 }
 
 .form-control {
@@ -233,14 +241,19 @@ h1.page-title {
     font-size: 0.95rem;
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
-    background-color: #fff;
+    background-color: var(--bg-input);
+    color: white;
     transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.form-control::placeholder {
+    color: var(--text-light);
 }
 
 .form-control:focus {
     outline: none;
-    border-color: var(--border-focus);
-    box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.2);
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
 }
 
 /* --- Layout Helpers --- */
@@ -266,7 +279,7 @@ h1.page-title {
 }
 
 .stat-card {
-    background: white;
+    background: var(--bg-card);
     padding: 1.5rem;
     border-radius: var(--radius-lg);
     border: 1px solid var(--border-color);
@@ -296,7 +309,7 @@ h1.page-title {
 }
 
 .post-card {
-    background: white;
+    background: var(--bg-card);
     border-radius: var(--radius-lg);
     border: 1px solid var(--border-color);
     box-shadow: var(--shadow-sm);
@@ -309,6 +322,7 @@ h1.page-title {
 .post-card:hover {
     transform: translateY(-2px);
     box-shadow: var(--shadow-md);
+    border-color: var(--primary-color);
 }
 
 .post-header {
@@ -328,8 +342,8 @@ h1.page-title {
     letter-spacing: 0.05em;
 }
 
-.platform-badge.reddit { background: #ffedd5; color: #9a3412; }
-.platform-badge.twitter { background: #e0f2fe; color: #0369a1; }
+.platform-badge.reddit { background: rgba(255, 69, 0, 0.15); color: #ff4500; }
+.platform-badge.twitter { background: rgba(29, 161, 242, 0.15); color: #1da1f2; }
 
 .post-content {
     padding: 1.25rem;
@@ -337,16 +351,49 @@ h1.page-title {
     color: var(--text-main);
     flex-grow: 1;
     white-space: pre-line;
+    line-height: 1.6;
 }
 
 .post-actions {
     padding: 1rem 1.25rem;
-    background: #f8fafc;
+    background: rgba(0, 0, 0, 0.2);
     border-top: 1px solid var(--border-color);
     border-radius: 0 0 var(--radius-lg) var(--radius-lg);
     display: flex;
     gap: 0.75rem;
     align-items: center;
+}
+
+/* Tabs for Filtering */
+.filter-tabs {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 1px;
+}
+
+.filter-tab {
+    padding: 0.75rem 1rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+}
+
+.filter-tab:hover {
+    color: var(--text-main);
+}
+
+.filter-tab.active {
+    color: var(--primary-color);
+    border-bottom-color: var(--primary-color);
+}
+
+/* Twitter Specific Styling for "Detailed" View */
+.tweet-card {
+    border-left: 4px solid #1da1f2;
 }
 
 .badge-dot {
@@ -364,10 +411,4 @@ h1.page-title {
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes pulse-green {
-    0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-    70% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
 }

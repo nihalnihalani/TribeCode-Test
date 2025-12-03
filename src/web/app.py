@@ -152,12 +152,19 @@ def trigger_scout(
     return RedirectResponse(url="/interactions", status_code=303)
 
 @app.get("/interactions")
-def list_interactions(request: Request, db: Session = Depends(get_db)):
+def list_interactions(request: Request, platform: Optional[str] = None, db: Session = Depends(get_db)):
     # Fetch all interactions (or implement pagination later)
-    interactions = get_all_interactions(limit=50) 
+    query = db.query(Interaction).order_by(Interaction.created_at.desc())
+    
+    if platform:
+        query = query.filter(Interaction.platform == platform)
+        
+    interactions = query.limit(50).all()
+    
     return templates.TemplateResponse("interactions.html", {
         "request": request, 
-        "interactions": interactions
+        "interactions": interactions,
+        "current_filter": platform
     })
 
 @app.post("/interactions/{interaction_id}/like")
