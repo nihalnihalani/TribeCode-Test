@@ -16,6 +16,7 @@
 - **Style & Conventions**: Check existing patterns/helpers before implementing new logic. Match existing coding style.
 - **Linter Errors**: Fix introduced linter errors immediately.
 - **No Reverts**: Do not revert changes unless explicitly asked.
+- **Real Data Only**: Never use dummy, demo, or mock data in production code. All implementations must work with real APIs, real databases, and real integrations. Mock data should only exist in test files (e.g., `tests/` directory) for unit testing purposes. Production code must handle real data sources and edge cases properly.
 
 ## Browser & Testing Guidelines
 
@@ -30,6 +31,7 @@
 - **Local Server**: Do not start the local web server unless prompted.
 - **Ports**: Do not guess ports; check the codebase.
 - **Interaction**: Do not use the shell to interact with the browser; use browser tools.
+- **Test Mocks**: Mocking is acceptable and recommended in test files (`tests/`) to isolate unit tests. However, production code (e.g., `src/`) must use real integrations and data sources.
 
 ## Vercel MCP Instructions
 
