@@ -33,59 +33,73 @@
 - **Interaction**: Do not use the shell to interact with the browser; use browser tools.
 - **Test Mocks**: Mocking is acceptable and recommended in test files (`tests/`) to isolate unit tests. However, production code (e.g., `src/`) must use real integrations and data sources.
 
-## Vercel MCP Instructions
+## Code Quality & Best Practices
 
-### Documentation & Platform
-- **Search**: Use `search_vercel_documentation` for questions about Next.js, Vercel features, pricing, or security.
+### Python Standards
+- **Type Hints**: Use type hints for function parameters and return types where appropriate.
+- **Docstrings**: Add docstrings to all classes and public functions explaining their purpose.
+- **Error Handling**: Use specific exception types and provide meaningful error messages.
+- **Imports**: Follow PEP 8 import ordering (standard library, third-party, local).
+- **Naming**: Use descriptive names following PEP 8 (snake_case for functions/variables, PascalCase for classes).
 
-### Deployment Access
-- **Protected Deployments**: If a Vercel URL returns 403/401, use `get_access_to_vercel_url` to generate a shareable link with an auth cookie.
-- **Fetch Fallback**: Use `web_fetch_vercel_url` if the environment doesn't support cookies.
+### Database & Persistence
+- **Transactions**: Always use database transactions for multi-step operations.
+- **Idempotency**: Ensure all database operations are idempotent (can be safely retried).
+- **Migrations**: Document schema changes and provide migration scripts if needed.
+- **Connection Management**: Use context managers for database connections when possible.
 
-### Project Management
-- **Discovery**: Use `list_projects` or `list_teams` to find IDs if unknown. Check `.vercel/project.json` if available.
+### API Integration
+- **Rate Limiting**: Always respect API rate limits and implement appropriate delays.
+- **Error Handling**: Handle API errors gracefully with retries and exponential backoff where appropriate.
+- **Authentication**: Never hardcode credentials; use environment variables or secure vaults.
+- **User-Agent**: Always identify bots with clear User-Agent strings per platform requirements.
 
-## Sanity MCP Instructions
-
-### Core Agent Principles
-- **Persistence**: Keep going until the user's query is completely resolved.
-- **Tool Usage**: Use tools to gather information; do not guess.
-- **Planning**: Plan approach before tool calls.
-- **Resource Clarification**: Always ask which resource (project ID + dataset) to use if multiple are available.
-- **Error Handling**: Try different approaches on error; do not apologize, just act.
-
-### Content Handling
-- **Schema-First Approach**: Always check `get_schema` before querying or editing to understand document types.
-- **Resource Selection**: Explicitly confirm resource selection with the user.
-- **Document Creation Limits**: Max 5 documents at a time. Use `async=true` for multiple creations.
-
-### Searching for Content
-- **Schema-First Search**: Use schema to find correct types, then `query_documents`.
-- **Multi-Step Queries**: For related entities, query the reference first, then the primary content.
-- **Schema Awareness**: Check if fields are arrays or single values before querying.
-
-### Working with GROQ Queries
-- **Syntax**: Quote computed field names in projections (e.g., `{"title": name}`).
-- **Text Search**: Use `match text::query("term")`.
-- **Semantic Search**: Use `semantic_search` with embedding indices.
-
-### Document Operations
-- **Action-First**: Perform actions immediately using tools (`create_document`, `update_document`, etc.).
-- **Document IDs**: Drafts use `drafts.` prefix; releases use `versions.[releaseId].` prefix.
-- **Mutation Notes**:
-    - References must be patched after creation.
-    - Use `unset` to remove references.
-    - References require `_type: 'reference'` and `_ref`.
-
-### Releases and Versioning
-- Use release tools (`list_releases`, `create_release`, etc.) to manage content staging.
-- Query using the appropriate perspective ("raw", "drafts", "published", or release ID).
-
-### Error Handling
-- Check document existence, required fields, and permissions.
-- Verify GROQ syntax and field types.
+### Agent Architecture
+- **Modularity**: Keep agents separate and focused on single responsibilities.
+- **State Management**: Use the database for state persistence, not in-memory storage.
+- **Context Awareness**: Agents should have access to historical context when making decisions.
+- **Safety Checks**: Implement content filtering and safety checks before posting.
 
 ### Response Format
-- Concise but thorough.
-- Format complex data with markdown.
-- Explain actions clearly.
+- **Concise but Thorough**: Provide complete information without unnecessary verbosity.
+- **Format Complex Data**: Use markdown for structured data presentation.
+- **Explain Actions**: Clearly explain what actions were taken and why.
+
+## File & Project Structure
+
+### Directory Organization
+- **Source Code**: All production code lives in `src/` directory.
+- **Tests**: All test files live in `tests/` directory with `test_` prefix.
+- **Templates**: Web templates are in `src/web/templates/`.
+- **Static Assets**: CSS, JS, and images in `src/web/static/`.
+- **Database**: SQLite database file (`vibebot.db`) should be in project root or configurable via environment.
+
+### File Naming
+- **Python Files**: Use `snake_case.py` for modules.
+- **Test Files**: Use `test_<module_name>.py` pattern.
+- **Configuration**: Use `.env` for environment variables, never commit actual secrets.
+
+## Environment & Dependencies
+
+### Environment Variables
+- **Required Variables**: Check `.env.example` for required environment variables.
+- **Validation**: Validate required environment variables on application startup.
+- **Defaults**: Provide sensible defaults where possible, but fail fast if critical variables are missing.
+
+### Dependencies
+- **Version Pinning**: Pin dependency versions in `requirements.txt` for reproducibility.
+- **Security**: Regularly update dependencies to patch security vulnerabilities.
+- **Minimal Dependencies**: Only include necessary dependencies to keep the project lightweight.
+
+## Testing Standards
+
+### Test Coverage
+- **Unit Tests**: Every agent and utility function should have unit tests.
+- **Integration Tests**: Test the full workflow from API call to database storage.
+- **Mock External Services**: Mock external API calls in tests to avoid rate limits and dependencies.
+
+### Test Quality
+- **Test Names**: Use descriptive test names that explain what is being tested.
+- **Arrange-Act-Assert**: Follow AAA pattern in test structure.
+- **Fixtures**: Use pytest fixtures for common setup/teardown logic.
+- **Isolation**: Tests should be independent and runnable in any order.
