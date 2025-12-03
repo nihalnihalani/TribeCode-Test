@@ -25,7 +25,7 @@
 
 ---
 
-## ⚡️ Overview
+## <img src="https://img.icons8.com/?id=15366&format=png&size=32" width="32" height="32" style="vertical-align: middle; margin-right: 8px;"> Overview
 
 The "Build in Public" movement creates a high-velocity stream of content. Developers engage daily, but finding genuine signals amidst the noise is impossible for humans at scale. **VibeBot** solves this by automating the discovery, analysis, and engagement loop.
 
@@ -50,12 +50,12 @@ The "Build in Public" movement creates a high-velocity stream of content. Develo
 
 ---
 
-## 🚀 Key Features
+## <img src="https://img.icons8.com/?id=CNwCliesWEeX&format=png&size=32" width="32" height="32" style="vertical-align: middle; margin-right: 8px;"> Key Features
 
 <table>
   <tr>
     <td width="50%" valign="top">
-      <h3>📡 The Scout (Discovery)</h3>
+      <h3><img src="https://img.icons8.com/?id=63315&format=png&size=24" width="24" height="24" style="vertical-align: middle; margin-right: 8px;"> The Scout (Discovery)</h3>
       <ul>
         <li><b>Multi-Platform Radar:</b> Scrapes X (Twitter) and Reddit simultaneously.</li>
         <li><b>Smart Filtering:</b> Ignores memes/images to focus on text-heavy technical posts.</li>
@@ -63,7 +63,7 @@ The "Build in Public" movement creates a high-velocity stream of content. Develo
       </ul>
     </td>
     <td width="50%" valign="top">
-      <h3>🧠 The Vibe Check (Intelligence)</h3>
+      <h3><img src="https://img.icons8.com/?id=14748&format=png&size=24" width="24" height="24" style="vertical-align: middle; margin-right: 8px;"> The Vibe Check (Intelligence)</h3>
       <ul>
         <li><b>Persona Engine:</b> Adopts a "casual dev" tone (lowercase, technical slang).</li>
         <li><b>Contextual Memory:</b> Remembers previous interactions to avoid repetitive replies.</li>
@@ -73,7 +73,7 @@ The "Build in Public" movement creates a high-velocity stream of content. Develo
   </tr>
   <tr>
     <td width="50%" valign="top">
-      <h3>💾 The Archivist (Memory)</h3>
+      <h3><img src="https://img.icons8.com/?id=13280&format=png&size=24" width="24" height="24" style="vertical-align: middle; margin-right: 8px;"> The Archivist (Memory)</h3>
       <ul>
         <li><b>Local Persistence:</b> SQLite database stores every tweet, reply, and metric.</li>
         <li><b>Deduplication:</b> SHA-256 hashing ensures we never process the same post twice.</li>
@@ -81,7 +81,7 @@ The "Build in Public" movement creates a high-velocity stream of content. Develo
       </ul>
     </td>
     <td width="50%" valign="top">
-      <h3>🎛️ Dashboard (Control)</h3>
+      <h3><img src="https://img.icons8.com/?id=63251&format=png&size=24" width="24" height="24" style="vertical-align: middle; margin-right: 8px;"> Dashboard (Control)</h3>
       <ul>
         <li><b>Campaign Manager:</b> Launch targeted scouts for keywords like `#SaaS` or `#IndieHacker`.</li>
         <li><b>Feed View:</b> Tinder-style review interface for approving AI drafts.</li>
@@ -93,7 +93,7 @@ The "Build in Public" movement creates a high-velocity stream of content. Develo
 
 ---
 
-## 🛠️ Tech Stack
+## <img src="https://img.icons8.com/?id=20544&format=png&size=32" width="32" height="32" style="vertical-align: middle; margin-right: 8px;"> Tech Stack
 
 <div align="center">
 
@@ -110,7 +110,7 @@ The "Build in Public" movement creates a high-velocity stream of content. Develo
 
 ---
 
-## 🏗️ System Architecture
+## <img src="https://img.icons8.com/?id=15191&format=png&size=32" width="32" height="32" style="vertical-align: middle; margin-right: 8px;"> System Architecture
 
 ```text
 +------------------+       +------------------+       +------------------+
@@ -129,7 +129,7 @@ The "Build in Public" movement creates a high-velocity stream of content. Develo
 
 ---
 
-## 📸 Interface
+## <img src="https://img.icons8.com/?id=13075&format=png&size=32" width="32" height="32" style="vertical-align: middle; margin-right: 8px;"> Interface
 
 <div align="center">
 
@@ -145,7 +145,7 @@ The "Build in Public" movement creates a high-velocity stream of content. Develo
 
 ---
 
-## 🔌 API Documentation
+## <img src="https://img.icons8.com/?id=12088&format=png&size=32" width="32" height="32" style="vertical-align: middle; margin-right: 8px;"> API Documentation
 
 The dashboard is powered by a robust REST API.
 
@@ -158,7 +158,7 @@ The dashboard is powered by a robust REST API.
 
 ---
 
-## 📂 Database Schema
+## <img src="https://img.icons8.com/?id=12160&format=png&size=32" width="32" height="32" style="vertical-align: middle; margin-right: 8px;"> Database Schema
 
 We use a relational schema optimized for text analysis and metrics tracking.
 
@@ -173,7 +173,7 @@ We use a relational schema optimized for text analysis and metrics tracking.
 
 ---
 
-## 🚦 Getting Started
+## <img src="https://img.icons8.com/?id=15199&format=png&size=32" width="32" height="32" style="vertical-align: middle; margin-right: 8px;"> Getting Started
 
 ### Prerequisites
 - Python 3.11+
