@@ -3,6 +3,46 @@
 ## User Rules
 - **Git Workflow**: Every time substantial changes are made, they must be pushed to the GitHub repository in the branch `nihal-branch` (or "nihal's branch") with proper comments. If the branch is not present, it must be created.
 
+## General Agent Guidelines
+
+### Tool Usage
+- **Natural Language**: Do not refer to tool names explicitly; describe actions in natural language.
+- **Specialized Tools**: Use specialized tools (e.g., `read_file`, `write_file`) instead of terminal commands (`cat`, `echo`).
+- **Parallelism**: Maximize parallel tool calls for independent operations.
+
+### Code Editing & Exploration
+- **Semantic Search**: Start with broad queries (`codebase_search`) and narrow down. Run multiple searches with different wordings.
+- **Context**: Trace symbols to definitions/usages. Understand the "full picture" before editing.
+- **Style & Conventions**: Check existing patterns/helpers before implementing new logic. Match existing coding style.
+- **Linter Errors**: Fix introduced linter errors immediately.
+- **No Reverts**: Do not revert changes unless explicitly asked.
+
+## Browser & Testing Guidelines
+
+### Testing Flow
+1.  **Navigate**: Go to the page to test.
+2.  **Snapshot**: Capture page elements (`browser_snapshot`).
+3.  **Interact**: Perform actions (click, type) and observe results.
+4.  **Re-snapshot**: Verify changes.
+5.  **Visual Inspection**: Use `browser_take_screenshot` for visual checks.
+
+### Restrictions
+- **Local Server**: Do not start the local web server unless prompted.
+- **Ports**: Do not guess ports; check the codebase.
+- **Interaction**: Do not use the shell to interact with the browser; use browser tools.
+
+## Vercel MCP Instructions
+
+### Documentation & Platform
+- **Search**: Use `search_vercel_documentation` for questions about Next.js, Vercel features, pricing, or security.
+
+### Deployment Access
+- **Protected Deployments**: If a Vercel URL returns 403/401, use `get_access_to_vercel_url` to generate a shareable link with an auth cookie.
+- **Fetch Fallback**: Use `web_fetch_vercel_url` if the environment doesn't support cookies.
+
+### Project Management
+- **Discovery**: Use `list_projects` or `list_teams` to find IDs if unknown. Check `.vercel/project.json` if available.
+
 ## Sanity MCP Instructions
 
 ### Core Agent Principles
@@ -47,4 +87,3 @@
 - Concise but thorough.
 - Format complex data with markdown.
 - Explain actions clearly.
-
