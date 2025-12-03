@@ -2,7 +2,7 @@
 
 VibeBot is an autonomous agent designed to identify, analyze, and engage with "Vibe Coding" and "Build in Public" content across Reddit and LinkedIn. Unlike simple automation scripts, this system is built with a production-first mindset, featuring comprehensive unit testing, modular agentic architecture, and local archival persistence.
 
-## <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=2754&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=2754&format=png&size=24" height="24"/></picture> Problem Statement
+## <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=417&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=417&format=png&size=24" height="24"/></picture> Problem Statement
 
 **The Context** The "Build in Public" movement has created a high-value stream of content across fragmented platforms. Developers are constantly shipping MVPs, but finding these genuine signals amidst the noise is difficult.
 
@@ -15,7 +15,7 @@ VibeBot is an autonomous agent designed to identify, analyze, and engage with "V
 ### The Solution
 An agentic system that **Detects** relevance, **Engages** intelligently using LLMs, and **Archives** interactions to a local SQLite database for future analysis.
 
-## <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=60641&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=60641&format=png&size=24" height="24"/></picture> System Architecture
+## <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=2799&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=2799&format=png&size=24" height="24"/></picture> System Architecture
 
 The project follows a Multi-Agent approach (refer to docs/Agents+Skills.md for deep dive):
 
@@ -34,7 +34,7 @@ The project follows a Multi-Agent approach (refer to docs/Agents+Skills.md for d
    - **Skills**: `check_deduplication`, `commit_transaction`, `export_logs`.
    - **Unit Tests**: Ensures idempotency (never commenting on the same post twice).
 
-## <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=24551&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=24551&format=png&size=24" height="24"/></picture> Tech Stack
+## <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=11240&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=11240&format=png&size=24" height="24"/></picture> Tech Stack
 
 - **Core**: Python 3.11+
 - **Orchestration**: LangChain / Pydantic AI (or your preferred framework)
@@ -42,7 +42,7 @@ The project follows a Multi-Agent approach (refer to docs/Agents+Skills.md for d
 - **Testing**: pytest + unittest.mock
 - **APIs**: PRAW (Reddit), LinkedIn API, OpenAI/Anthropic (Generation)
 
-## <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=QQwcfqZkWqUL&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=QQwcfqZkWqUL&format=png&size=24" height="24"/></picture> Testing Strategy (Priority #1)
+## <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=111782&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=111782&format=png&size=24" height="24"/></picture> Testing Strategy (Priority #1)
 
 We enforce a strict TDD (Test Driven Development) approach. No feature is merged without accompanying tests.
 
@@ -78,7 +78,7 @@ CREATE TABLE interactions (
 );
 ```
 
-## <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=92053&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=92053&format=png&size=24" height="24"/></picture> Getting Started
+## <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=11564&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=11564&format=png&size=24" height="24"/></picture> Getting Started
 
 ### Clone the Repo
 
