@@ -9,8 +9,12 @@ import os
 from src.database import init_db, get_db, get_all_interactions, Interaction, save_interaction
 from src.agents.reddit_scout import reddit_scout
 from src.agents.twitter_scout import twitter_scout
+from src.agents.interaction_agent import interaction_agent
 
 app = FastAPI(title="VibeBot Dashboard")
+
+# Mount static files
+app.mount("/static", StaticFiles(directory="src/web/static"), name="static")
 
 # Templates
 templates = Jinja2Templates(directory="src/web/templates")
@@ -41,6 +45,10 @@ def dashboard(request: Request, db: Session = Depends(get_db)):
 @app.get("/scout")
 def scout_form(request: Request):
     return templates.TemplateResponse("scout.html", {"request": request})
+
+@app.get("/settings")
+def settings_page(request: Request):
+    return templates.TemplateResponse("settings.html", {"request": request})
 
 def run_scout_task(platform: str, limit: int, query: str = "build in public"):
     """Background task to run scouting."""
@@ -98,3 +106,40 @@ def like_interaction(interaction_id: int, db: Session = Depends(get_db)):
             
     return RedirectResponse(url="/interactions", status_code=303)
 
+@app.post("/interactions/{interaction_id}/comment")
+def comment_interaction(interaction_id: int, db: Session = Depends(get_db)):
+    # 1. Fetch target interaction
+    interaction = db.query(Interaction).filter(Interaction.id == interaction_id).first()
+    if not interaction:
+        return RedirectResponse(url="/interactions", status_code=303)
+
+    # 2. Fetch context (recent interactions)
+    context_posts = get_all_interactions(limit=10)
+
+    # 3. Generate Comment
+    generated_comment = interaction_agent.generate_comment(interaction, context_posts)
+    
+    if not generated_comment:
+        print("Failed to generate comment.")
+        return RedirectResponse(url="/interactions", status_code=303)
+
+    print(f"Generated Comment: {generated_comment}")
+    
+    # 4. Post Comment & Like
+    success = False
+    if interaction.platform == "Reddit":
+        # Like first
+        reddit_scout.like_post(interaction.external_post_id)
+        # Then comment
+        success = reddit_scout.comment_post(interaction.external_post_id, generated_comment)
+    elif interaction.platform == "Twitter":
+        twitter_scout.like_post(interaction.external_post_id)
+        success = twitter_scout.comment_post(interaction.external_post_id, generated_comment)
+
+    # 5. Update DB
+    if success:
+        interaction.bot_comment = generated_comment
+        interaction.status = "POSTED"
+        db.commit()
+
+    return RedirectResponse(url="/interactions", status_code=303)

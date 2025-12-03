@@ -100,4 +100,18 @@ class TwitterScout:
             print(f"Twitter Like Error (Likely Tier Restriction): {e}")
             return False
 
+    def comment_post(self, tweet_id: str, text: str) -> bool:
+        """
+        Replies to a tweet.
+        """
+        print(f"[Twitter Scout] Attempting to reply to tweet {tweet_id}...")
+        try:
+            if self.client:
+                self.client.create_tweet(text=text, in_reply_to_tweet_id=tweet_id)
+                print(f"Replied to {tweet_id}: {text}")
+                return True
+        except Exception as e:
+            print(f"Twitter Reply Error: {e}")
+            return False
+
 twitter_scout = TwitterScout()

@@ -41,10 +41,21 @@
             <form action="/interactions/{{ interaction.id }}/like" method="post" class="like-form">
                 <button type="submit" class="btn btn-primary btn-sm">
                     <img src="https://img.icons8.com/?id=87&format=png&size=16" style="filter: invert(1); margin-right: 6px;">
-                    Like Post
+                    Like
+                </button>
+            </form>
+            <form action="/interactions/{{ interaction.id }}/comment" method="post" class="like-form" style="margin-left: 0.5rem;">
+                <button type="submit" class="btn btn-secondary btn-sm" style="background: #3b82f6; color: white; border: none;">
+                    <img src="https://img.icons8.com/?id=11669&format=png&size=16" style="filter: invert(1); margin-right: 6px;">
+                    AI Reply
                 </button>
             </form>
         </div>
+        {% if interaction.bot_comment %}
+        <div style="margin-top: 1rem; padding: 0.75rem; background: #f1f5f9; border-radius: 8px; font-size: 0.9rem;">
+            <strong>Bot Replied:</strong> {{ interaction.bot_comment }}
+        </div>
+        {% endif %}
     </article>
     {% else %}
     <div class="card" style="text-align: center; padding: 3rem;">

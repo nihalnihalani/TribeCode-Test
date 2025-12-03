@@ -101,6 +101,23 @@ class RedditScout:
             print(f"Failed to upvote {external_post_id}: {e}")
             return False
 
+    def comment_post(self, external_post_id: str, text: str) -> bool:
+        """
+        Posts a comment on a submission.
+        """
+        if not self.reddit:
+            print("Reddit Scout is not authenticated.")
+            return False
+            
+        try:
+            submission = self.reddit.submission(id=external_post_id)
+            submission.reply(text)
+            print(f"Commented on {external_post_id}: {text}")
+            return True
+        except Exception as e:
+            print(f"Failed to comment on {external_post_id}: {e}")
+            return False
+
 # Singleton instance or factory can be used
 reddit_scout = RedditScout()
 
