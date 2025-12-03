@@ -2,7 +2,7 @@
 
 VibeBot is an autonomous agent designed to identify, analyze, and engage with "Vibe Coding" and "Build in Public" content across Reddit and LinkedIn. Unlike simple automation scripts, this system is built with a production-first mindset, featuring comprehensive unit testing, modular agentic architecture, and local archival persistence.
 
-## 🚩 Problem Statement
+## <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=2754&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=2754&format=png&size=24" height="24"/></picture> Problem Statement
 
 **The Context** The "Build in Public" movement has created a high-value stream of content across fragmented platforms. Developers are constantly shipping MVPs, but finding these genuine signals amidst the noise is difficult.
 
@@ -15,7 +15,7 @@ VibeBot is an autonomous agent designed to identify, analyze, and engage with "V
 ### The Solution
 An agentic system that **Detects** relevance, **Engages** intelligently using LLMs, and **Archives** interactions to a local SQLite database for future analysis.
 
-## 🏗 System Architecture
+## <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=60641&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=60641&format=png&size=24" height="24"/></picture> System Architecture
 
 The project follows a Multi-Agent approach (refer to docs/Agents+Skills.md for deep dive):
 
@@ -34,7 +34,7 @@ The project follows a Multi-Agent approach (refer to docs/Agents+Skills.md for d
    - **Skills**: `check_deduplication`, `commit_transaction`, `export_logs`.
    - **Unit Tests**: Ensures idempotency (never commenting on the same post twice).
 
-## 🛠 Tech Stack
+## <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=24551&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=24551&format=png&size=24" height="24"/></picture> Tech Stack
 
 - **Core**: Python 3.11+
 - **Orchestration**: LangChain / Pydantic AI (or your preferred framework)
@@ -42,7 +42,7 @@ The project follows a Multi-Agent approach (refer to docs/Agents+Skills.md for d
 - **Testing**: pytest + unittest.mock
 - **APIs**: PRAW (Reddit), LinkedIn API, OpenAI/Anthropic (Generation)
 
-## 🧪 Testing Strategy (Priority #1)
+## <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=QQwcfqZkWqUL&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=QQwcfqZkWqUL&format=png&size=24" height="24"/></picture> Testing Strategy (Priority #1)
 
 We enforce a strict TDD (Test Driven Development) approach. No feature is merged without accompanying tests.
 
@@ -62,7 +62,7 @@ pytest tests/test_agents.py
 - `tests/test_safety.py`: adversarial testing against the LLM prompt to prevent toxic output.
 - `tests/test_db.py`: Verifies schema integrity and deduplication logic.
 
-## 💾 Data Schema (Local DB)
+## <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=11360&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=11360&format=png&size=24" height="24"/></picture> Data Schema (Local DB)
 
 We use a lightweight interactions table to archive all activity.
 
@@ -78,7 +78,7 @@ CREATE TABLE interactions (
 );
 ```
 
-## 🚀 Getting Started
+## <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=92053&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=92053&format=png&size=24" height="24"/></picture> Getting Started
 
 ### Clone the Repo
 
@@ -109,7 +109,7 @@ pip install -r requirements.txt
 python main.py --mode=scout
 ```
 
-## ⚠️ Ethics & Safety
+## <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=876&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=876&format=png&size=24" height="24"/></picture> Ethics & Safety
 
 This bot is designed to be supportive, not spammy.
 
