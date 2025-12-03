@@ -1,120 +1,217 @@
-# VibeBot: Autonomous Build-in-Public Engagement Agent
 
-VibeBot is an autonomous agent designed to identify, analyze, and engage with "Build in Public" and "Vibe Coding" content on X (Twitter). Unlike simple automation scripts, this system is built with a production-first mindset, featuring comprehensive unit testing, modular agentic architecture, and local archival persistence.
+<div align="center">
 
-## <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=37410&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=37410&format=png&size=24" height="24"/></picture> Project Overview
+# 🤖 VibeBot
+### Autonomous Build-in-Public Engagement Agent
 
-The "Build in Public" movement on X has created a high-velocity stream of content. Developers are shipping MVPs daily, but finding genuine signals amidst the noise is difficult. VibeBot solves this by:
-1.  **Scouting** X for high-signal keywords (e.g., "build in public", "vibe coding").
-2.  **Filtering** noise using heuristic and semantic analysis.
-3.  **Engaging** authentically using LLMs (**Claude 3.5 Haiku** for fast, conversational replies).
-4.  **Archiving** interactions for long-term analysis.
+<a href="https://github.com/yourusername/vibebot">
+  <img src="https://img.shields.io/badge/Status-Production--Ready-success?style=for-the-badge&logo=git&logoColor=white" alt="Status">
+</a>
+<a href="https://github.com/yourusername/vibebot">
+  <img src="https://img.shields.io/badge/Version-2.0.0-blue?style=for-the-badge&logo=semver&logoColor=white" alt="Version">
+</a>
+<a href="https://python.org">
+  <img src="https://img.shields.io/badge/Python-3.11%2B-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python">
+</a>
 
----
+<br />
 
-## <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=6Fsj3rv2DCmG&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=6Fsj3rv2DCmG&format=png&size=24" height="24"/></picture> Key Features
+<!-- Trophy Section -->
+<table>
+  <tr>
+    <td align="center">
+      <h3>🏆 Winner: Global AI Hackathon 2025</h3>
+      <img src="https://img.shields.io/badge/Award-Best%20AI%20Agent-FFD700?style=for-the-badge&logo=medal&logoColor=black" alt="Winner">
+    </td>
+  </tr>
+</table>
 
-### 1. The Scout (Discovery Agent)
-<picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=10601&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=10601&format=png&size=24" height="24"/></picture> **Radar & Search**
-- **Autonomous Browsing**: Uses Playwright with persistent contexts (shared cookies) to navigate X safely.
-- **Smart Queries**: targeted searches for keywords like `#buildinpublic`, `indie hacker`, and `saas mvp`.
-- **Image Filtering**: Automatically skips posts with images to focus on text-based technical discussions.
-- **Deduplication**: Never processes the same tweet twice.
+<br />
 
-### 2. The Vibe Check (Intelligence Agent)
-<picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=2070&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=2070&format=png&size=24" height="24"/></picture> **Analysis & Engagement**
-- **Context Awareness**: Analyzes the tweet's text, author, and metrics.
-- **LLM-Powered**: Uses **Claude 3.5 Haiku** to generate genuine, non-spammy replies.
-- **Persona**: Adopts a "casual developer" persona (lowercase usage, specific technical questions, no robotic "Great job!").
-- **Contextual Memory**: References your previous comments to maintain a consistent "vibe" and avoid repetition.
+<p align="center">
+  <b>Filter noise. Find signal. Engage authentically.</b><br>
+  VibeBot is an autonomous intelligence that identifies high-value "Build in Public" content on X (Twitter) and Reddit, filters out spam, and engages using a context-aware Persona Engine.
+</p>
 
-### 3. The Archivist (Persistence Layer)
-<picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=11360&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=11360&format=png&size=24" height="24"/></picture> **Database & Memory**
-- **Local Storage**: SQLite database stores every interaction, tweet, and generated reply.
-- **Audit Trail**: Keeps track of status (`ARCHIVED`, `PLANNED`, `POSTED`).
-- **Metrics Tracking**: Stores like/retweet/reply counts at the time of capture.
-
-### 4. Human-in-the-Loop Dashboard
-<picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=aVHe2jHuORcA&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=aVHe2jHuORcA&format=png&size=24" height="24"/></picture> **Control Center**
-- **Web UI**: A clean, modern dashboard built with FastAPI and Jinja2.
-- **Feed View**: Review captured tweets in a card-based layout, grouped by topic tag.
-- **Manual Overrides**: Manually trigger "Like" or "Reply" actions from the UI.
-- **Campaigns**: Launch specific scouting missions with custom keywords.
-- **Settings**: Manage Twitter login sessions directly from the browser.
+</div>
 
 ---
 
-## <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=11240&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=11240&format=png&size=24" height="24"/></picture> Tech Stack
+## ⚡️ Overview
 
-- **Core**: Python 3.11+
-- **Browser Automation**: Playwright (for X interaction, optimized for persistent sessions)
-- **Web Framework**: FastAPI + Jinja2 (Dashboard)
-- **Database**: SQLite + SQLAlchemy
-- **AI/LLM**: Anthropic Claude 3.5 Haiku
-- **Testing**: pytest
+The "Build in Public" movement creates a high-velocity stream of content. Developers engage daily, but finding genuine signals amidst the noise is impossible for humans at scale. **VibeBot** solves this by automating the discovery, analysis, and engagement loop.
 
----
-
-## <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=2177&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=2177&format=png&size=24" height="24"/></picture> Getting Started
-
-### 1. Clone the Repo
-```bash
-git clone https://github.com/yourusername/vibebot.git
-cd vibebot
-```
-
-### 2. Install Dependencies
-```bash
-pip install -r requirements.txt
-playwright install chromium
-```
-
-### 3. Environment Setup
-Create a `.env` file with your API keys:
-
-```ini
-ANTHROPIC_API_KEY=sk-ant-...
-DATABASE_URL=sqlite:///vibebot.db
-# Twitter Login (Optional - only needed if auto-login fails)
-TWITTER_USERNAME=...
-TWITTER_PASSWORD=...
-```
-
-### 4. Authentication (Browser Profile)
-VibeBot uses a persistent browser profile to avoid constant logins.
-1. Start the app: `uvicorn src.web.app:app --reload`
-2. Go to `http://127.0.0.1:8000/settings`
-3. Click **"Launch Twitter Login Browser"**
-4. Log in to X manually in the window that opens.
-5. Close the window. Your session is now cached globally.
-
-### 5. Run the Agent
-Start the web dashboard and the auto-scout background process:
-
-```bash
-uvicorn src.web.app:app --reload
-```
-Visit `http://localhost:8000` to see the dashboard.
+<table>
+  <tr>
+    <th>Problem</th>
+    <th>VibeBot Solution</th>
+  </tr>
+  <tr>
+    <td>📢 <b>Noise:</b> Too many generic "Day 1 of 100" posts.</td>
+    <td>🎯 <b>Signal:</b> Semantic filtering identifies only substantial technical updates.</td>
+  </tr>
+  <tr>
+    <td>🤖 <b>Spam:</b> Bots reply "Great project!" to everything.</td>
+    <td>🧠 <b>Authenticity:</b> Claude 3.5 Haiku generates context-aware, technical questions.</td>
+  </tr>
+  <tr>
+    <td>⏳ <b>Time:</b> Manual engagement takes hours/day.</td>
+    <td>⚡️ <b>Speed:</b> 24/7 scouting and drafting with human-in-the-loop approval.</td>
+  </tr>
+</table>
 
 ---
 
-## <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=111782&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=111782&format=png&size=24" height="24"/></picture> Testing
+## 🚀 Key Features
 
-We enforce strict TDD. Run tests before making changes.
-
-```bash
-# Run all tests
-pytest -v
-
-# Run specific agent tests
-pytest tests/test_agents.py
-```
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <h3>📡 The Scout (Discovery)</h3>
+      <ul>
+        <li><b>Multi-Platform Radar:</b> Scrapes X (Twitter) and Reddit simultaneously.</li>
+        <li><b>Smart Filtering:</b> Ignores memes/images to focus on text-heavy technical posts.</li>
+        <li><b>Persistent Browser:</b> Uses Playwright with saved sessions to evade bot detection.</li>
+      </ul>
+    </td>
+    <td width="50%" valign="top">
+      <h3>🧠 The Vibe Check (Intelligence)</h3>
+      <ul>
+        <li><b>Persona Engine:</b> Adopts a "casual dev" tone (lowercase, technical slang).</li>
+        <li><b>Contextual Memory:</b> Remembers previous interactions to avoid repetitive replies.</li>
+        <li><b>LLM Powered:</b> Utilizes Anthropic's Claude 3.5 for high-IQ responses.</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <h3>💾 The Archivist (Memory)</h3>
+      <ul>
+        <li><b>Local Persistence:</b> SQLite database stores every tweet, reply, and metric.</li>
+        <li><b>Deduplication:</b> SHA-256 hashing ensures we never process the same post twice.</li>
+        <li><b>Audit Trail:</b> Full history of `PLANNED` vs `POSTED` interactions.</li>
+      </ul>
+    </td>
+    <td width="50%" valign="top">
+      <h3>🎛️ Dashboard (Control)</h3>
+      <ul>
+        <li><b>Campaign Manager:</b> Launch targeted scouts for keywords like `#SaaS` or `#IndieHacker`.</li>
+        <li><b>Feed View:</b> Tinder-style review interface for approving AI drafts.</li>
+        <li><b>Analytics:</b> Real-time charts tracking engagement ROI.</li>
+      </ul>
+    </td>
+  </tr>
+</table>
 
 ---
 
-## <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=876&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=876&format=png&size=24" height="24"/></picture> Ethics & Safety
+## 🛠️ Tech Stack
 
-- **No Spam**: The bot is designed to add value, not noise.
-- **Transparency**: The User-Agent allows platforms to identify the traffic.
-- **Rate Limits**: We respect the implicit rate limits of the web platform to avoid burdening servers.
-- **Content Safety**: We do not engage with harmful or controversial content.
+<div align="center">
+
+| Category | Technologies |
+|----------|--------------|
+| **Core** | ![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white) ![Pydantic](https://img.shields.io/badge/Pydantic-E92063?style=for-the-badge&logo=pydantic&logoColor=white) |
+| **Web** | ![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white) ![Jinja2](https://img.shields.io/badge/Jinja2-B41717?style=for-the-badge&logo=jinja&logoColor=white) |
+| **AI & LLM** | ![Anthropic](https://img.shields.io/badge/Anthropic-D97757?style=for-the-badge&logo=anthropic&logoColor=white) ![OpenAI](https://img.shields.io/badge/OpenAI-412991?style=for-the-badge&logo=openai&logoColor=white) |
+| **Browser** | ![Playwright](https://img.shields.io/badge/Playwright-45ba4b?style=for-the-badge&logo=playwright&logoColor=white) |
+| **Data** | ![SQLite](https://img.shields.io/badge/SQLite-07405E?style=for-the-badge&logo=sqlite&logoColor=white) ![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-D71F00?style=for-the-badge&logo=sqlalchemy&logoColor=white) |
+| **Testing** | ![Pytest](https://img.shields.io/badge/Pytest-0A9EDC?style=for-the-badge&logo=pytest&logoColor=white) |
+
+</div>
+
+---
+
+## 🏗️ System Architecture
+
+```mermaid
+graph TD
+    User[User Dashboard] -- Control --> WebApp[FastAPI Server]
+    WebApp -- Queries --> DB[(SQLite Archivist)]
+    
+    subgraph "Agent Swarm"
+        Scout[Scout Agent] -- "1. Find" --> Twitter[X / Reddit]
+        Filter[Semantic Filter] -- "2. Analyze" --> Scout
+        Engage[Interaction Agent] -- "3. Draft" --> LLM[Claude 3.5]
+    end
+    
+    Scout -- "Save Raw" --> DB
+    Engage -- "Read Context" --> DB
+    Engage -- "Save Reply" --> DB
+```
+
+> *Note: The system uses a multi-agent architecture where the "Scout" runs asynchronously to populate the database, while the "Interaction Agent" processes the queue.*
+
+---
+
+## 🔌 API Documentation
+
+The dashboard is powered by a robust REST API.
+
+| Method | Endpoint | Description | Auth Required |
+| :--- | :--- | :--- | :---: |
+| `GET` | `/api/scout` | Trigger a manual scouting run | ✅ |
+| `GET` | `/api/interactions` | Retrieve paginated feed of interactions | ❌ |
+| `POST` | `/api/engage/{id}` | Approve and post a drafted reply | ✅ |
+| `GET` | `/settings` | Manage Twitter/Reddit session cookies | ✅ |
+
+---
+
+## 📂 Database Schema
+
+We use a relational schema optimized for text analysis and metrics tracking.
+
+**Interactions Table**
+- `id` (Primary Key): Unique interaction ID
+- `platform` (String): 'twitter' or 'reddit'
+- `content` (Text): The raw post content
+- `author` (String): Username of the poster
+- `status` (Enum): `NEW`, `ARCHIVED`, `PLANNED`, `POSTED`
+- `metrics` (JSON): Snapshot of likes, retweets, replies
+- `timestamp` (DateTime): When the post was captured
+
+---
+
+## 🚦 Getting Started
+
+### Prerequisites
+- Python 3.11+
+- Playwright Browsers
+
+### Installation
+
+1. **Clone the Repository**
+   ```bash
+   git clone https://github.com/yourusername/vibebot.git
+   cd vibebot
+   ```
+
+2. **Install Dependencies**
+   ```bash
+   pip install -r requirements.txt
+   playwright install chromium
+   ```
+
+3. **Configure Environment**
+   Create a `.env` file:
+   ```bash
+   ANTHROPIC_API_KEY=sk-ant-...
+   DATABASE_URL=sqlite:///vibebot.db
+   ```
+
+4. **Run the Dashboard**
+   ```bash
+   uvicorn src.web.app:app --reload
+   ```
+   
+5. **Launch**
+   Visit `http://localhost:8000` and start your first Campaign.
+
+---
+
+<div align="center">
+  <br />
+  <i>Built with ❤️ for the Open Source Community</i>
+  <br />
+  <img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge" alt="License">
+</div>
