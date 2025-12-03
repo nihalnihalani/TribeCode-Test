@@ -124,20 +124,17 @@ The "Build in Public" movement creates a high-velocity stream of content. Develo
 
 ## 🏗️ System Architecture
 
-```mermaid
-graph TD
-    User[User Dashboard] -- Control --> WebApp[FastAPI Server]
-    WebApp -- Queries --> DB[(SQLite Archivist)]
-    
-    subgraph "Agent Swarm"
-        Scout[Scout Agent] -- "1. Find" --> Twitter[X / Reddit]
-        Filter[Semantic Filter] -- "2. Analyze" --> Scout
-        Engage[Interaction Agent] -- "3. Draft" --> LLM[Claude 3.5]
-    end
-    
-    Scout -- "Save Raw" --> DB
-    Engage -- "Read Context" --> DB
-    Engage -- "Save Reply" --> DB
+```text
++------------------+       +------------------+       +------------------+
+|   User Dashboard |       |   Scout Agents   |       |   Intelligence   |
+|   (FastAPI/Web)  | <---> | (Reddit/Twitter) | <---> | (Claude 3.5 AI)  |
++------------------+       +------------------+       +------------------+
+          ^                         |                          |
+          |                         v                          v
+          |              +----------------------+       +------------------+
+          +--------------|   SQLite Database    | <---- |  Browser Context |
+                         |   (The Archivist)    |       |   (Playwright)   |
+                         +----------------------+       +------------------+
 ```
 
 > *Note: The system uses a multi-agent architecture where the "Scout" runs asynchronously to populate the database, while the "Interaction Agent" processes the queue.*
@@ -181,28 +178,28 @@ We use a relational schema optimized for text analysis and metrics tracking.
 ### Installation
 
 1. **Clone the Repository**
-   ```bash
-   git clone https://github.com/yourusername/vibebot.git
-   cd vibebot
-   ```
+```bash
+git clone https://github.com/yourusername/vibebot.git
+cd vibebot
+```
 
 2. **Install Dependencies**
-   ```bash
-   pip install -r requirements.txt
-   playwright install chromium
-   ```
+```bash
+pip install -r requirements.txt
+playwright install chromium
+```
 
 3. **Configure Environment**
    Create a `.env` file:
    ```bash
-   ANTHROPIC_API_KEY=sk-ant-...
-   DATABASE_URL=sqlite:///vibebot.db
+ANTHROPIC_API_KEY=sk-ant-...
+DATABASE_URL=sqlite:///vibebot.db
    ```
 
 4. **Run the Dashboard**
-   ```bash
-   uvicorn src.web.app:app --reload
-   ```
+```bash
+uvicorn src.web.app:app --reload
+```
    
 5. **Launch**
    Visit `http://localhost:8000` and start your first Campaign.
