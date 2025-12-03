@@ -4,7 +4,7 @@
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
     <h1 class="page-title">Dashboard Overview</h1>
     <a href="/scout" class="btn btn-primary">
-        <img src="https://img.icons8.com/?id=WwWusvLMTFd7&format=png&size=20" style="filter: invert(1);">
+        <img src="https://img.icons8.com/?id=WwWusvLMTFd7&format=png&size=20" style="filter: invert(0);">
         New Scout Mission
     </a>
 </div>
@@ -18,7 +18,7 @@
                 <span class="stat-value">{{ stats.total }}</span>
             </div>
             <div style="padding: 8px; background: rgba(255,255,255,0.1); border-radius: 8px;">
-                <img src="https://img.icons8.com/?id=123464&format=png&size=24" style="filter: invert(0.5);">
+                <img src="https://img.icons8.com/?id=123464&format=png&size=24" style="filter: invert(1);">
             </div>
         </div>
     </div>
@@ -30,7 +30,7 @@
                 <span class="stat-value">{{ stats.reddit }}</span>
             </div>
             <div style="padding: 8px; background: rgba(234, 88, 12, 0.2); border-radius: 8px;">
-                <img src="https://img.icons8.com/?id=118637&format=png&size=24" style="filter: invert(45%) sepia(72%) saturate(1361%) hue-rotate(350deg) brightness(94%) contrast(93%);">
+                <img src="https://img.icons8.com/?id=118637&format=png&size=24" style="filter: brightness(0) invert(1);">
             </div>
         </div>
     </div>
@@ -41,51 +41,51 @@
                 <span class="stat-label">X (Twitter)</span>
                 <span class="stat-value">{{ stats.twitter }}</span>
             </div>
-            <div style="padding: 8px; background: rgba(2, 132, 199, 0.2); border-radius: 8px;">
-                <img src="https://img.icons8.com/?id=118638&format=png&size=24" style="filter: invert(42%) sepia(67%) saturate(1741%) hue-rotate(178deg) brightness(94%) contrast(98%);">
+            <div style="padding: 8px; background: rgba(56, 189, 248, 0.2); border-radius: 8px;">
+                <img src="https://img.icons8.com/?id=118638&format=png&size=24" style="filter: brightness(0) invert(1);">
             </div>
         </div>
     </div>
 </div>
 
-<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem;">
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
     <!-- Recent Activity Feed -->
     <div class="card">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-            <h3 style="margin:0; font-size: 1.1rem;">Recent Pulse</h3>
-            <a href="/interactions" style="color: var(--primary-color); text-decoration: none; font-weight: 600; font-size: 0.875rem; display: flex; align-items: center; gap: 4px;">
-                View All <img src="https://img.icons8.com/?id=86525&format=png&size=16" style="width: 12px; filter: invert(36%) sepia(44%) saturate(4582%) hue-rotate(229deg) brightness(99%) contrast(93%);">
+            <h3 style="margin:0; font-size: 1.2rem; font-weight: 600;">Recent Pulse</h3>
+            <a href="/interactions" style="color: var(--primary-color); text-decoration: none; font-weight: 600; font-size: 0.9rem; display: flex; align-items: center; gap: 6px; transition: opacity 0.2s;">
+                View All <img src="https://img.icons8.com/?id=86525&format=png&size=16" style="width: 12px; filter: brightness(0) invert(1) opacity(0.7);">
             </a>
         </div>
         
         <div class="feed-preview">
             {% for interaction in interactions %}
-            <div style="padding: 1rem 0; border-bottom: 1px solid var(--border-color); display: flex; align-items: start; gap: 1rem;">
-                <div style="width: 36px; height: 36px; border-radius: 8px; background: {{ 'rgba(234, 88, 12, 0.15)' if interaction.platform == 'Reddit' else 'rgba(2, 132, 199, 0.15)' }}; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+            <div style="padding: 1.25rem 0; border-bottom: 1px solid var(--border-color); display: flex; align-items: start; gap: 1rem;">
+                <div style="width: 42px; height: 42px; border-radius: 10px; background: {{ 'rgba(234, 88, 12, 0.15)' if interaction.platform == 'Reddit' else 'rgba(56, 189, 248, 0.15)' }}; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1px solid {{ 'rgba(234, 88, 12, 0.2)' if interaction.platform == 'Reddit' else 'rgba(56, 189, 248, 0.2)' }};">
                     {% if interaction.platform == 'Reddit' %}
-                        <img src="https://img.icons8.com/?id=118637&format=png&size=20">
+                        <img src="https://img.icons8.com/?id=118637&format=png&size=24" style="filter: brightness(0) saturate(100%) invert(60%) sepia(80%) saturate(2000%) hue-rotate(350deg);">
                     {% else %}
-                        <img src="https://img.icons8.com/?id=118638&format=png&size=20">
+                        <img src="https://img.icons8.com/?id=118638&format=png&size=24" style="filter: brightness(0) saturate(100%) invert(70%) sepia(60%) saturate(2000%) hue-rotate(180deg);">
                     {% endif %}
                 </div>
                 <div style="flex-grow: 1;">
-                    <div style="font-weight: 500; font-size: 0.95rem; margin-bottom: 0.25rem; line-height: 1.4; color: var(--text-main);">
-                        {{ interaction.post_content[:80] }}...
+                    <div style="font-weight: 500; font-size: 1rem; margin-bottom: 0.35rem; line-height: 1.5; color: var(--text-main);">
+                        {{ interaction.post_content[:90] }}...
                     </div>
-                    <div style="font-size: 0.75rem; color: var(--text-muted);">
-                        {{ interaction.created_at.strftime('%b %d, %H:%M') }} • {{ interaction.platform }}
+                    <div style="font-size: 0.8rem; color: var(--text-muted);">
+                        {{ interaction.created_at.strftime('%b %d, %H:%M') }} • <span style="color: var(--text-light);">{{ interaction.platform }}</span>
                     </div>
                 </div>
                 {% if interaction.status == 'POSTED' %}
-                <span style="background: rgba(22, 163, 74, 0.2); color: var(--success-color); font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; font-weight: 600;">REPLIED</span>
+                <span style="background: rgba(16, 185, 129, 0.15); color: var(--success-color); font-size: 0.7rem; padding: 4px 8px; border-radius: 4px; font-weight: 600; letter-spacing: 0.05em; border: 1px solid rgba(16, 185, 129, 0.2);">REPLIED</span>
                 {% endif %}
             </div>
             {% else %}
-            <div style="text-align: center; padding: 3rem 1rem;">
-                <div style="width: 64px; height: 64px; background: var(--bg-input); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
-                    <img src="https://img.icons8.com/?id=10601&format=png&size=32" style="opacity: 0.4; filter: invert(1);">
+            <div style="text-align: center; padding: 4rem 1rem;">
+                <div style="width: 72px; height: 72px; background: rgba(255,255,255,0.05); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; border: 1px solid var(--border-color);">
+                    <img src="https://img.icons8.com/?id=10601&format=png&size=36" style="opacity: 0.5; filter: invert(1);">
                 </div>
-                <p style="color: var(--text-muted); margin-bottom: 1rem;">No signal detected yet.</p>
+                <p style="color: var(--text-muted); margin-bottom: 1.5rem; font-size: 1.1rem;">No signal detected yet.</p>
                 <a href="/scout" class="btn btn-sm btn-primary">Start Scanning</a>
             </div>
             {% endfor %}
@@ -94,7 +94,7 @@
 
     <!-- Chart -->
     <div class="card">
-        <h3 style="margin:0 0 1.5rem 0; font-size: 1.1rem;">Source Distribution</h3>
+        <h3 style="margin:0 0 1.5rem 0; font-size: 1.2rem;">Source Distribution</h3>
         <div style="position: relative; height: 250px; display: flex; align-items: center; justify-content: center;">
             <canvas id="platformChart"></canvas>
         </div>
@@ -103,8 +103,9 @@
 
 <script>
     // Set Chart default color for dark theme
-    Chart.defaults.color = '#94a3b8';
-    Chart.defaults.borderColor = '#334155';
+    Chart.defaults.color = '#a1a1aa';
+    Chart.defaults.borderColor = 'rgba(255,255,255,0.05)';
+    Chart.defaults.font.family = 'Inter';
     
     const ctx = document.getElementById('platformChart').getContext('2d');
     new Chart(ctx, {
@@ -115,7 +116,7 @@
                 data: [{{ stats.reddit }}, {{ stats.twitter }}],
                 backgroundColor: ['#f97316', '#0ea5e9'],
                 borderWidth: 0,
-                hoverOffset: 4
+                hoverOffset: 10
             }]
         },
         options: {
@@ -125,13 +126,21 @@
                 legend: { 
                     position: 'bottom',
                     labels: {
-                        padding: 20,
+                        padding: 25,
                         usePointStyle: true,
-                        font: { family: 'Inter', size: 12 }
+                        pointStyle: 'circle',
+                        font: { family: 'Inter', size: 12, weight: 500 }
                     }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0,0,0,0.8)',
+                    padding: 12,
+                    cornerRadius: 8,
+                    titleFont: { family: 'Inter', size: 13 },
+                    bodyFont: { family: 'Inter', size: 13 }
                 }
             },
-            cutout: '75%'
+            cutout: '80%'
         }
     });
 </script>

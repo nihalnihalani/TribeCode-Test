@@ -12,10 +12,10 @@
     <!-- Manual Control -->
     <div class="card">
         <div style="display: flex; align-items: center; margin-bottom: 1.5rem;">
-            <div style="background: rgba(99, 102, 241, 0.1); padding: 0.5rem; border-radius: 8px; margin-right: 1rem;">
+            <div style="background: rgba(59, 130, 246, 0.1); padding: 0.6rem; border-radius: 8px; margin-right: 1rem;">
                 <img src="https://img.icons8.com/?id=10601&format=png&size=24" alt="Radar" style="filter: invert(1);">
             </div>
-            <h3 style="margin:0;">Manual Target</h3>
+            <h3 style="margin:0; font-size: 1.1rem;">Manual Target</h3>
         </div>
 
         <form action="/scout" method="post">
@@ -27,8 +27,8 @@
             <div class="form-group">
                 <label class="form-label">Volume Limit</label>
                 <div style="display: flex; align-items: center; gap: 1rem;">
-                    <input type="range" name="limit" min="5" max="50" value="20" oninput="this.nextElementSibling.value = this.value" style="flex-grow: 1;">
-                    <span style="background: var(--bg-input); padding: 4px 8px; border-radius: 4px; font-family: monospace; color: var(--text-main);"><output>20</output></span>
+                    <input type="range" name="limit" min="5" max="50" value="20" oninput="this.nextElementSibling.value = this.value" style="flex-grow: 1; accent-color: var(--primary-color);">
+                    <span style="background: var(--bg-input); padding: 4px 8px; border-radius: 4px; font-family: monospace; color: var(--text-main); min-width: 36px; text-align: center; border: 1px solid var(--border-color);"><output>20</output></span>
                 </div>
             </div>
 
@@ -40,16 +40,16 @@
     </div>
 
     <!-- Auto Pilot -->
-    <div class="card" style="background: linear-gradient(145deg, var(--bg-card) 0%, #0f172a 100%); border: 1px solid var(--primary-color); position: relative; overflow: hidden;">
+    <div class="card" style="background: linear-gradient(145deg, rgba(255,255,255,0.03) 0%, rgba(0,0,0,0.2) 100%); border: 1px solid rgba(59, 130, 246, 0.3); position: relative; overflow: hidden;">
         <!-- Glow effect -->
-        <div style="position: absolute; top: -50%; right: -50%; width: 100%; height: 100%; background: radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, transparent 70%); pointer-events: none;"></div>
+        <div style="position: absolute; top: -50%; right: -50%; width: 100%; height: 100%; background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, transparent 70%); pointer-events: none;"></div>
         
-        <div style="text-align: center; padding: 1rem 0; position: relative; z-index: 1;">
-            <div style="background: linear-gradient(135deg, #6366f1, #8b5cf6); width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; box-shadow: 0 0 20px rgba(99, 102, 241, 0.4);">
-                 <img src="https://img.icons8.com/?id=pvRqtncLYdo4&format=png&size=32" style="filter: invert(1);">
+        <div style="text-align: center; padding: 1.5rem 0; position: relative; z-index: 1;">
+            <div style="background: var(--primary-gradient); width: 72px; height: 72px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; box-shadow: 0 0 30px rgba(59, 130, 246, 0.4);">
+                 <img src="https://img.icons8.com/?id=pvRqtncLYdo4&format=png&size=32" style="filter: invert(1) brightness(1.2);">
             </div>
-            <h2 style="margin-bottom: 0.5rem;">Auto-Pilot Mode</h2>
-            <p class="text-muted text-sm" style="margin-bottom: 2rem;">
+            <h2 style="margin-bottom: 0.75rem; font-size: 1.5rem;">Auto-Pilot Mode</h2>
+            <p class="text-muted text-sm" style="margin-bottom: 2.5rem; max-width: 80%; margin-left: auto; margin-right: auto;">
                 Let BuildRadar automatically detect trending "Build in Public" topics and fetch high-signal posts for you.
             </p>
             
@@ -63,11 +63,11 @@
                 </button>
             </form>
             
-            <div style="margin-top: 1.5rem;">
-                <span class="text-muted text-sm" style="font-size: 0.75rem;">Trending Now:</span>
-                <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; margin-top: 0.5rem;">
+            <div style="margin-top: 2rem;">
+                <span class="text-muted text-sm" style="font-size: 0.75rem; display: block; margin-bottom: 0.75rem;">TRENDING NOW</span>
+                <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem;">
                     {% for topic in suggestions %}
-                    <span style="background: var(--bg-input); padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; color: var(--text-muted); border: 1px solid var(--border-color);">
+                    <span style="background: rgba(255,255,255,0.05); padding: 4px 10px; border-radius: 100px; font-size: 0.75rem; color: var(--text-muted); border: 1px solid var(--border-color); transition: all 0.2s;">
                         {{ topic }}
                     </span>
                     {% endfor %}
