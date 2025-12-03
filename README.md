@@ -16,18 +16,6 @@
 
 <br />
 
-<!-- Trophy Section -->
-<table>
-  <tr>
-    <td align="center">
-      <h3>🏆 Winner: Global AI Hackathon 2025</h3>
-      <img src="https://img.shields.io/badge/Award-Best%20AI%20Agent-FFD700?style=for-the-badge&logo=medal&logoColor=black" alt="Winner">
-    </td>
-  </tr>
-</table>
-
-<br />
-
 <p align="center">
   <b>Filter noise. Find signal. Engage authentically.</b><br>
   VibeBot is an autonomous intelligence that identifies high-value "Build in Public" content on X (Twitter) and Reddit, filters out spam, and engages using a context-aware Persona Engine.
