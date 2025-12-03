@@ -27,6 +27,7 @@ class Interaction(Base):
     post_url = Column(String, nullable=True)
     metrics_json = Column(Text, nullable=True) # JSON string for likes, retweets, etc.
     media_url = Column(String, nullable=True)
+    tag = Column(String, nullable=True) # Search keyword used to find this
     
     bot_comment = Column(Text, nullable=True)
     status = Column(String, default='ARCHIVED') # 'PLANNED', 'POSTED', 'ARCHIVED'
@@ -72,7 +73,8 @@ def save_interaction(
     author_handle: Optional[str] = None,
     post_url: Optional[str] = None,
     metrics: Optional[Dict] = None,
-    media_url: Optional[str] = None
+    media_url: Optional[str] = None,
+    tag: Optional[str] = None
 ):
     """Saves a new interaction to the database."""
     session = SessionLocal()
@@ -89,6 +91,11 @@ def save_interaction(
             if post_url: existing.post_url = post_url
             if metrics_str: existing.metrics_json = metrics_str
             if media_url: existing.media_url = media_url
+            if tag: existing.tag = tag # Update tag if we found it again with a tag
+            
+            # Also update status and comment if provided (critical for Auto-Pilot)
+            if status and status != "ARCHIVED": existing.status = status
+            if bot_comment: existing.bot_comment = bot_comment
             
             session.commit()
             return existing
@@ -103,7 +110,8 @@ def save_interaction(
             author_handle=author_handle,
             post_url=post_url,
             metrics_json=metrics_str,
-            media_url=media_url
+            media_url=media_url,
+            tag=tag
         )
         session.add(new_interaction)
         session.commit()

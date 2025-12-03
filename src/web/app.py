@@ -11,7 +11,6 @@ import time
 import concurrent.futures
 
 from src.database import init_db, get_db, get_all_interactions, Interaction, save_interaction
-from src.agents.reddit_scout import reddit_scout
 from src.agents.twitter_scout import twitter_scout
 from src.agents.interaction_agent import interaction_agent
 from src.utils.browser_setup import setup_twitter_login
@@ -64,7 +63,6 @@ def dashboard(request: Request, db: Session = Depends(get_db)):
     interactions = get_all_interactions(limit=5)
     # Simple stats
     total_count = db.query(Interaction).count()
-    reddit_count = db.query(Interaction).filter(Interaction.platform == "Reddit").count()
     twitter_count = db.query(Interaction).filter(Interaction.platform == "Twitter").count()
     
     return templates.TemplateResponse("dashboard.html", {
@@ -72,7 +70,6 @@ def dashboard(request: Request, db: Session = Depends(get_db)):
         "interactions": interactions,
         "stats": {
             "total": total_count,
-            "reddit": reddit_count,
             "twitter": twitter_count
         }
     })
@@ -98,18 +95,7 @@ def trigger_twitter_login(background_tasks: BackgroundTasks):
     
     return RedirectResponse(url="/settings?msg=Browser+Launched", status_code=303)
 
-def run_reddit_task(query: str, limit: int):
-    """Worker function for Reddit scouting."""
-    try:
-        print(f"Starting Reddit Scout for query: {query}")
-        subs = ["saas", "startups", "sideproject", "buildinpublic", "entrepreneur"]
-        # Use query as search term in subreddits
-        reddit_scout.fetch_posts(subreddits=subs, search_query=query, limit=limit)
-        print("Reddit Scout Finished")
-    except Exception as e:
-        print(f"Reddit Scout Error: {e}")
-
-def run_twitter_task(query: str, limit: int):
+def run_twitter_task(query: str, limit: int, auto_like: bool = False, auto_comment: bool = False):
     """Worker function for Twitter scouting."""
     try:
         search_queries = []
@@ -118,25 +104,46 @@ def run_twitter_task(query: str, limit: int):
         else:
             search_queries = [k.strip() for k in query.split(",") if k.strip()]
         
-        print(f"Running Twitter Scout for queries: {search_queries}")
+        print(f"Running Twitter Scout for queries: {search_queries} (Auto-Like={auto_like}, Auto-Comment={auto_comment})")
         
         total_found = 0
-        for q in search_queries:
-            print(f"  [Twitter Scout] Searching for: {q}")
-            raw_posts = twitter_scout.fetch_posts(keywords=[q], limit=limit)
-            total_found += len(raw_posts)
+        
+        # If Auto-Engage is ON, we use the batch_engage method which handles everything in one session
+        if auto_like or auto_comment:
+            # Determine tag for batch
+            batch_tag = search_queries[0] if len(search_queries) == 1 else "Auto-Pilot"
+            if query.strip().lower() != "auto" and len(search_queries) > 1:
+                batch_tag = "Custom Mix"
+
+            processed = twitter_scout.batch_engage(
+                keywords=search_queries,
+                limit=limit,
+                auto_like=auto_like,
+                auto_comment=auto_comment,
+                interaction_agent=interaction_agent,
+                tag=batch_tag
+            )
+            total_found = processed
+            print(f"Batch Engage Completed. Processed {processed} tweets.")
             
-            # Apply Filters
-            filtered_posts = keyword_prefilter(raw_posts)
-            if filtered_posts:
-                final_posts = semantic_filter.filter_posts(filtered_posts)
-                print(f"  [Filter] {len(raw_posts)} -> {len(filtered_posts)} -> {len(final_posts)} items")
-            else:
-                print(f"  [Filter] {len(raw_posts)} -> 0 items")
+        else:
+            # Standard Discovery Mode (Fetch only)
+            for q in search_queries:
+                print(f"  [Twitter Scout] Searching for: {q}")
+                raw_posts = twitter_scout.fetch_posts(keywords=[q], limit=limit, tag=q)
+                total_found += len(raw_posts)
                 
-            # Small delay between queries
-            if len(search_queries) > 1:
-                time.sleep(5)
+                # Apply Filters
+                filtered_posts = keyword_prefilter(raw_posts)
+                if filtered_posts:
+                    final_posts = semantic_filter.filter_posts(filtered_posts)
+                    print(f"  [Filter] {len(raw_posts)} -> {len(filtered_posts)} -> {len(final_posts)} items")
+                else:
+                    print(f"  [Filter] {len(raw_posts)} -> 0 items")
+                    
+                # Small delay between queries
+                if len(search_queries) > 1:
+                    time.sleep(5)
 
         # If no posts found on Twitter, log a System Alert
         if total_found == 0:
@@ -158,11 +165,11 @@ def run_twitter_task(query: str, limit: int):
     except Exception as e:
         print(f"Twitter Scout Error: {e}")
 
-def run_scout_task(platform: str, limit: int, query: str = "build in public"):
+def run_scout_task(platform: str, limit: int, query: str = "build in public", auto_like: bool = False, auto_comment: bool = False):
     """Background task to run scouting in parallel."""
     
     # Use ThreadPoolExecutor to run tasks concurrently
-    # Reddit uses PRAW (blocking I/O), Twitter uses Tweepy/Playwright (blocking/sync I/O here)
+    # Twitter uses Tweepy/Playwright (blocking/sync I/O here)
     # Threads are suitable for I/O bound tasks like this.
     
     print(f"Launching Scout Mission: Platform={platform}, Query={query}, Limit={limit}")
@@ -170,11 +177,8 @@ def run_scout_task(platform: str, limit: int, query: str = "build in public"):
     with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
         futures = []
         
-        if platform == "reddit" or platform == "all":
-            futures.append(executor.submit(run_reddit_task, query, limit))
-        
-        if platform == "twitter" or platform == "all":
-            futures.append(executor.submit(run_twitter_task, query, limit))
+        # Always default to Twitter since Reddit is removed
+        futures.append(executor.submit(run_twitter_task, query, limit, auto_like, auto_comment))
         
         # Wait for all tasks to complete
         concurrent.futures.wait(futures)
@@ -185,9 +189,25 @@ def trigger_scout(
     background_tasks: BackgroundTasks,
     platform: str = Form(...),
     limit: int = Form(20),
-    query: str = Form("auto")
+    query: str = Form("auto"),
+    auto_like: bool = Form(False),
+    auto_comment: bool = Form(False)
 ):
-    background_tasks.add_task(run_scout_task, platform, limit, query)
+    background_tasks.add_task(run_scout_task, platform, limit, query, auto_like, auto_comment)
+    return RedirectResponse(url="/interactions", status_code=303)
+
+@app.post("/interactions/clear")
+def clear_interactions(db: Session = Depends(get_db)):
+    """Clears all interactions from the database."""
+    try:
+        # Delete all rows
+        db.query(Interaction).delete()
+        db.commit()
+        print("Database cleared.")
+    except Exception as e:
+        print(f"Error clearing database: {e}")
+        db.rollback()
+        
     return RedirectResponse(url="/interactions", status_code=303)
 
 @app.get("/interactions")
@@ -197,11 +217,23 @@ def list_interactions(request: Request, platform: Optional[str] = None, db: Sess
     if platform:
         query = query.filter(Interaction.platform == platform)
         
-    interactions = query.limit(50).all()
+    interactions = query.limit(100).all()
+    
+    # Group by tag
+    grouped_interactions = {}
+    for i in interactions:
+        tag = i.tag if i.tag else "Uncategorized"
+        if tag not in grouped_interactions:
+            grouped_interactions[tag] = []
+        grouped_interactions[tag].append(i)
+        
+    # Sort groups? Maybe by most recent post in group?
+    # For now, just pass the dict.
     
     return templates.TemplateResponse("interactions.html", {
         "request": request, 
-        "interactions": interactions,
+        "grouped_interactions": grouped_interactions,
+        "interactions": interactions, # Keep flat list if needed for fallback
         "current_filter": platform
     })
 
@@ -210,9 +242,7 @@ def like_interaction(interaction_id: int, db: Session = Depends(get_db)):
     interaction = db.query(Interaction).filter(Interaction.id == interaction_id).first()
     if interaction:
         success = False
-        if interaction.platform == "Reddit":
-            success = reddit_scout.like_post(interaction.external_post_id)
-        elif interaction.platform == "Twitter":
+        if interaction.platform == "Twitter":
             success = twitter_scout.like_post(interaction.external_post_id)
         
         if success:
@@ -237,10 +267,7 @@ def comment_interaction(interaction_id: int, db: Session = Depends(get_db)):
     print(f"Generated Comment: {generated_comment}")
     
     success = False
-    if interaction.platform == "Reddit":
-        reddit_scout.like_post(interaction.external_post_id)
-        success = reddit_scout.comment_post(interaction.external_post_id, generated_comment)
-    elif interaction.platform == "Twitter":
+    if interaction.platform == "Twitter":
         twitter_scout.like_post(interaction.external_post_id)
         success = twitter_scout.comment_post(interaction.external_post_id, generated_comment)
 
