@@ -7,7 +7,7 @@ def setup_twitter_login():
     The session will be saved to 'twitter_auth_data' directory.
     """
     # Ensure the directory exists or let Playwright create it
-    user_data_dir = os.path.join(os.getcwd(), "twitter_auth_data")
+    user_data_dir = os.path.abspath(os.path.join(os.getcwd(), "twitter_auth_data"))
     
     print(f"Launching browser with user data dir: {user_data_dir}")
     print("Please log in to Twitter in the opened window.")

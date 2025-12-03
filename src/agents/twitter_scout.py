@@ -1,17 +1,35 @@
 import os
 import time
 import random
-from typing import List, Dict
-from playwright.sync_api import sync_playwright
-from src.database import save_interaction
+import threading
+from typing import List, Dict, Optional
+from playwright.sync_api import sync_playwright, Page
+from src.database import save_interaction, get_all_interactions
 
 class TwitterScout:
+    # Class-level lock to prevent multiple Playwright instances from conflicting
+    _lock = threading.Lock()
+
     def __init__(self, user_data_dir: str = None):
         if user_data_dir:
             self.user_data_dir = user_data_dir
         else:
             self.user_data_dir = os.path.join(os.getcwd(), "twitter_auth_data")
         self.headless = False # Visible for debugging/login checking
+
+    def _get_browser_context(self, p):
+        """Helper to launch context with consistent settings."""
+        return p.chromium.launch_persistent_context(
+            user_data_dir=self.user_data_dir,
+            headless=self.headless,
+            args=[
+                "--disable-blink-features=AutomationControlled",
+                "--no-sandbox",
+                "--disable-setuid-sandbox"
+            ],
+            user_agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            viewport={"width": 1280, "height": 720}
+        )
 
     def login(self, page):
         """
@@ -40,7 +58,6 @@ class TwitterScout:
                             time.sleep(2)
 
                         # 1. Find Username field
-                        # It's usually an input with autocomplete="username" or name="text"
                         print("  [Login] Looking for username input...")
                         user_input = None
                         try:
@@ -61,13 +78,12 @@ class TwitterScout:
                             
                             time.sleep(2)
                             
-                            # Check for unusual activity verification (sometimes asks for phone/email)
-                            # If we see another text input but no password input yet
+                            # Check for unusual activity verification
                             try:
                                 ver_input = page.wait_for_selector('input[data-testid="ocfEnterTextTextInput"]', timeout=2000)
                                 if ver_input:
                                     print("  [Login] unusual activity check detected. Entering username/email again...")
-                                    ver_input.fill(tw_username) # Usually wants username or email
+                                    ver_input.fill(tw_username)
                                     ver_input.press("Enter")
                                     time.sleep(2)
                             except:
@@ -87,6 +103,9 @@ class TwitterScout:
                                 try:
                                     page.wait_for_selector('article[data-testid="tweet"]', timeout=15000)
                                     print("  [Login] Success! Tweets visible.")
+                                    try:
+                                        page.context.storage_state(path=os.path.join(self.user_data_dir, "twitter_state.json"))
+                                    except: pass
                                     return
                                 except:
                                     print("  [Login] Wait for tweets timed out, but proceeding...")
@@ -105,26 +124,14 @@ class TwitterScout:
                     return
                 
                 print("  [Login] Attempting Google login...")
-                # Click "Sign in with Google"
-                # Note: Twitter's Google Sign In often opens a popup window.
                 
-                # We need to handle the popup
                 with page.expect_popup() as popup_info:
-                    # Find the button. It might be an iframe, so we try broad text matching first
-                    # or specific data-testid if known. 
-                    # 'iframe' is common for Google Identity.
-                    
-                    # Try clicking the Google button
-                    # Usually has 'Sign in with Google' text
                     google_btn = page.get_by_text("Sign in with Google")
                     if google_btn.count() > 0:
                         print("  [Login] Clicking 'Sign in with Google'...")
                         google_btn.first.click()
                     else:
-                        # Fallback: try clicking 'Log in' then finding Google
                         print("  [Login] 'Sign in with Google' not found immediately. Trying 'Log in' link...")
-                        
-                        # Try multiple selectors for Log in button
                         login_btn = None
                         try:
                             login_btn = page.wait_for_selector('a[href="/login"]', timeout=5000)
@@ -138,10 +145,8 @@ class TwitterScout:
                             print("  [Login] Found 'Log in' button/link. Clicking...")
                             login_btn.click()
                             time.sleep(3)
-                            # Now try finding Google button again
                             try:
-                                google_btn = page.wait_for_selector('iframe', timeout=5000) # Google often in iframe
-                                # This is tricky. Let's just look for text again in new page
+                                google_btn = page.wait_for_selector('iframe', timeout=5000)
                                 page.get_by_text("Sign in with Google").first.click()
                             except:
                                 print("  [Login] Could not find Google sign in after clicking Log in.")
@@ -151,7 +156,6 @@ class TwitterScout:
                 popup = popup_info.value
                 print("  [Login] Google Popup opened.")
                 
-                # Interact with Google Popup
                 popup.wait_for_load_state()
                 
                 # 1. Email
@@ -160,7 +164,6 @@ class TwitterScout:
                 email_input.fill(email)
                 popup.keyboard.press("Enter")
                 
-                # Wait for password field
                 time.sleep(3)
                 
                 # 2. Password
@@ -169,329 +172,453 @@ class TwitterScout:
                 pass_input.fill(password)
                 popup.keyboard.press("Enter")
                 
-                # Wait for popup to close (success)
                 print("  [Login] Waiting for authentication...")
                 popup.wait_for_event("close", timeout=30000)
                 print("  [Login] Popup closed. Authentication likely successful.")
                 
-                # Wait for main page to reload/redirect
                 page.wait_for_load_state()
                 time.sleep(5)
+                try:
+                    page.context.storage_state(path=os.path.join(self.user_data_dir, "twitter_state.json"))
+                except: pass
                 
         except Exception as e:
             print(f"  [Login] Auto-login attempt failed (or not needed): {e}")
 
-    def fetch_posts(self, keywords: List[str], limit: int = 10) -> List[Dict]:
+    def ensure_logged_in(self, page):
         """
-        Fetches posts using Playwright with a persistent profile.
-        Extracts: text, author, handle, metrics, media.
+        Soft check for login status. Navigates to home first.
+        Only triggers full login flow if necessary.
         """
-        print(f"\n[Twitter Scout] Fetching posts for keywords: {keywords}")
-        
-        found_tweets = []
-        
-        # Combine keywords (Playwright search logic)
-        # Twitter search: "keyword1 OR keyword2"
-        query = " OR ".join(f'"{k}"' for k in keywords)
-        search_url = f"https://twitter.com/search?q={query}&src=typed_query&f=live"
-        
-        print(f"  Search URL: {search_url}")
-
+        print("  [Login] Checking login status...")
         try:
-            with sync_playwright() as p:
-                browser = p.chromium.launch_persistent_context(
-                    user_data_dir=self.user_data_dir,
-                    headless=self.headless,
-                    args=[
-                        "--disable-blink-features=AutomationControlled",
-                        "--no-sandbox",
-                        "--disable-setuid-sandbox"
-                    ],
-                    user_agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-                    viewport={"width": 1280, "height": 720}
-                )
-                
-                page = browser.new_page()
-                
-                # 1. Navigate to home to set cookies/verify session
-                print("  Navigating to Twitter Home...")
-                try:
-                    page.goto("https://twitter.com/home", timeout=30000)
-                    time.sleep(3)
-                except Exception as e:
-                    print(f"  Warning: Home page navigation failed: {e}")
-
-                print(f"  Navigating to Search: {search_url}")
-                page.goto(search_url)
-                
-                # Wait for tweets to load
-                try:
-                    page.wait_for_selector('article[data-testid="tweet"]', timeout=15000)
-                except Exception:
-                    print("  Timeout waiting for tweets. Checking for login requirement...")
+            # Soft check: Go to home
+            page.goto("https://twitter.com/home", timeout=30000)
+            time.sleep(3)
+            
+            # Check if we are on home or redirected to login
+            if "login" in page.url:
+                 print("  [Login] Redirected to login page.")
+                 self.login(page)
+            elif page.query_selector('[data-testid="SideNav_NewTweet_Button"]') or "home" in page.url:
+                print("  [Login] Already logged in.")
+            else:
+                # Check for other logged-in indicators
+                if page.query_selector('[data-testid="AppTabBar_Home_Link"]'):
+                     print("  [Login] Already logged in (Home link found).")
+                else:
+                    print("  [Login] Status unclear, attempting login check...")
                     self.login(page)
-                    
-                    # Retry waiting for tweets after login attempt
-                    try:
-                        print("  Retrying wait for tweets...")
-                        page.wait_for_selector('article[data-testid="tweet"]', timeout=15000)
-                    except Exception:
-                        print("  Still no tweets found. Aborting.")
-                        # Capture screenshot for debug
-                        page.screenshot(path="debug_twitter_fetch.png")
-                        browser.close()
-                        return []
-
-                # Scroll a bit to load more if needed
-                for _ in range(3):
-                    page.mouse.wheel(0, 1000)
-                    time.sleep(1)
-
-                tweet_elements = page.query_selector_all('article[data-testid="tweet"]')
-                print(f"  Found {len(tweet_elements)} potential tweets (limiting to {limit})")
-
-                count = 0
-                for tweet_el in tweet_elements:
-                    if count >= limit:
-                        break
-                        
-                    try:
-                        # Extract ID from anchor href (usually /username/status/ID)
-                        time_el = tweet_el.query_selector('time')
-                        if not time_el:
-                            continue
-                        
-                        post_link_el = time_el.query_selector('..') # Parent of time is usually the link
-                        href = post_link_el.get_attribute('href') if post_link_el else ""
-                        
-                        if "status" not in href:
-                            # Fallback: search all links in tweet
-                            links = tweet_el.query_selector_all('a')
-                            for link in links:
-                                h = link.get_attribute('href')
-                                if h and "/status/" in h and "/photo/" not in h:
-                                    href = h
-                                    break
-                        
-                        if not href:
-                            continue
-                            
-                        # href format: /Username/status/123456789
-                        # Extract handle from href
-                        parts = href.split('/')
-                        if len(parts) >= 2:
-                            handle = "@" + parts[1]
-                            tweet_id = href.split('/status/')[-1].split('?')[0]
-                            post_url = f"https://twitter.com{href}"
-                        else:
-                            continue
-                        
-                        # Extract Text
-                        text_el = tweet_el.query_selector('div[data-testid="tweetText"]')
-                        text = text_el.inner_text() if text_el else "[No Text / Image Only]"
-                        
-                        # Extract Author Name
-                        user_el = tweet_el.query_selector('div[data-testid="User-Name"]')
-                        author_name = "Unknown"
-                        if user_el:
-                            # usually "Name\n@handle\n·\nTime"
-                            raw_user_text = user_el.inner_text()
-                            author_name = raw_user_text.split('\n')[0]
-
-                        # Extract Metrics (Likes, Retweets, Replies)
-                        # Selectors: [data-testid="reply"], [data-testid="retweet"], [data-testid="like"]
-                        # They usually contain an aria-label with the count, or text inside.
-                        metrics = {"replies": 0, "retweets": 0, "likes": 0}
-                        
-                        def get_metric(testid):
-                            el = tweet_el.query_selector(f'[data-testid="{testid}"]')
-                            if el:
-                                txt = el.inner_text() or "0"
-                                # Convert "1.2K" to 1200 if needed, but storing string is fine for display
-                                return txt.strip()
-                            return "0"
-
-                        metrics["replies"] = get_metric("reply")
-                        metrics["retweets"] = get_metric("retweet")
-                        metrics["likes"] = get_metric("like")
-                        
-                        # Extract Media (First Image)
-                        media_url = None
-                        img_el = tweet_el.query_selector('div[data-testid="tweetPhoto"] img')
-                        if img_el:
-                            media_url = img_el.get_attribute('src')
-
-                        # Deduplication & Save
-                        saved = save_interaction(
-                            platform="Twitter",
-                            external_post_id=tweet_id,
-                            post_content=text,
-                            status="ARCHIVED",
-                            author_name=author_name,
-                            author_handle=handle,
-                            post_url=post_url,
-                            metrics=metrics,
-                            media_url=media_url
-                        )
-                        
-                        found_tweets.append({
-                            "id": tweet_id, 
-                            "text": text, 
-                            "author": author_name,
-                            "handle": handle,
-                            "metrics": metrics
-                        })
-                        print(f"  Archived Tweet {tweet_id} by {handle}: {text[:30]}...")
-                        count += 1
-                        
-                    except Exception as e:
-                        print(f"  Error parsing tweet: {e}")
-                        continue
-                
-                browser.close()
-                return found_tweets
 
         except Exception as e:
-            print(f"Twitter Scout Error: {e}")
-            return []
+            print(f"  Warning: Login check failed: {e}")
+            self.login(page)
 
-    def like_post(self, tweet_id: str) -> bool:
+    def fetch_posts(self, keywords: List[str], limit: int = 10, tag: str = None) -> List[Dict]:
         """
-        Likes a tweet by navigating to it and clicking the heart.
+        Fetches posts using Playwright with a persistent profile.
         """
-        print(f"[Twitter Scout] Attempting to like tweet {tweet_id}")
-        
-        # Check if this is a mock/test ID (e.g. from unit tests)
-        if "test_post" in tweet_id:
-            print("  Skipping like on test ID")
-            return False
+        if not self._lock.acquire(timeout=60):
+            print("[Twitter Scout] Could not acquire lock. Skipping fetch.")
+            return []
             
-        url = f"https://twitter.com/i/web/status/{tweet_id}"
-        
         try:
-            with sync_playwright() as p:
-                browser = p.chromium.launch_persistent_context(
-                    user_data_dir=self.user_data_dir,
-                    headless=self.headless,
-                    args=["--disable-blink-features=AutomationControlled"],
-                    viewport={"width": 1280, "height": 720}
-                )
-                
-                page = browser.new_page()
-                print(f"  Navigating to {url}")
+            print(f"\n[Twitter Scout] Fetching posts for keywords: {keywords}")
+            
+            found_tweets = []
+            query = " OR ".join(f'"{k}"' for k in keywords)
+            search_url = f"https://twitter.com/search?q={query}&src=typed_query&f=live"
+            print(f"  Search URL: {search_url}")
+
+            # Use tag if provided, otherwise try to infer if single keyword
+            current_tag = tag if tag else (keywords[0] if len(keywords) == 1 else None)
+
+            try:
+                with sync_playwright() as p:
+                    browser = self._get_browser_context(p)
+                    page = browser.new_page()
+                    
+                    # Login Check
+                    self.ensure_logged_in(page)
+
+                    print(f"  Navigating to Search: {search_url}")
+                    page.goto(search_url)
+                    
+                    try:
+                        page.wait_for_selector('article[data-testid="tweet"]', timeout=15000)
+                    except Exception:
+                        print("  Timeout waiting for tweets. Checking for login requirement...")
+                        self.login(page)
+                        try:
+                            page.wait_for_selector('article[data-testid="tweet"]', timeout=15000)
+                        except Exception:
+                            print("  Still no tweets found. Aborting.")
+                            browser.close()
+                            return []
+
+                    # Scroll
+                    for _ in range(3):
+                        page.mouse.wheel(0, 1000)
+                        time.sleep(1)
+
+                    tweet_elements = page.query_selector_all('article[data-testid="tweet"]')
+                    print(f"  Found {len(tweet_elements)} potential tweets (limiting to {limit})")
+
+                    count = 0
+                    for tweet_el in tweet_elements:
+                        if count >= limit:
+                            break
+                        
+                        # Parsing Logic (Inline for brevity, usually shared)
+                        try:
+                            time_el = tweet_el.query_selector('time')
+                            if not time_el: continue
+                            
+                            post_link_el = time_el.query_selector('..')
+                            href = post_link_el.get_attribute('href') if post_link_el else ""
+                            
+                            if "status" not in href:
+                                links = tweet_el.query_selector_all('a')
+                                for link in links:
+                                    h = link.get_attribute('href')
+                                    if h and "/status/" in h and "/photo/" not in h:
+                                        href = h
+                                        break
+                            
+                            if not href: continue
+                            
+                            parts = href.split('/')
+                            if len(parts) >= 2:
+                                handle = "@" + parts[1]
+                                tweet_id = href.split('/status/')[-1].split('?')[0]
+                                post_url = f"https://twitter.com{href}"
+                            else:
+                                continue
+                            
+                            text_el = tweet_el.query_selector('div[data-testid="tweetText"]')
+                            text = text_el.inner_text() if text_el else "[No Text / Image Only]"
+                            
+                            user_el = tweet_el.query_selector('div[data-testid="User-Name"]')
+                            author_name = "Unknown"
+                            if user_el:
+                                raw_user_text = user_el.inner_text()
+                                author_name = raw_user_text.split('\n')[0]
+
+                            metrics = {"replies": 0, "retweets": 0, "likes": 0}
+                            def get_metric(testid):
+                                el = tweet_el.query_selector(f'[data-testid="{testid}"]')
+                                return el.inner_text().strip() if el else "0"
+
+                            metrics["replies"] = get_metric("reply")
+                            metrics["retweets"] = get_metric("retweet")
+                            metrics["likes"] = get_metric("like")
+                            
+                            media_url = None
+                            img_el = tweet_el.query_selector('div[data-testid="tweetPhoto"] img')
+                            if img_el: media_url = img_el.get_attribute('src')
+
+                            save_interaction(
+                                platform="Twitter",
+                                external_post_id=tweet_id,
+                                post_content=text,
+                                status="ARCHIVED",
+                                author_name=author_name,
+                                author_handle=handle,
+                                post_url=post_url,
+                                metrics=metrics,
+                                media_url=media_url,
+                                tag=current_tag
+                            )
+                            
+                            found_tweets.append({
+                                "id": tweet_id, "text": text, "author": author_name,
+                                "handle": handle, "metrics": metrics
+                            })
+                            print(f"  Archived Tweet {tweet_id} by {handle}: {text[:30]}...")
+                            count += 1
+                            
+                        except Exception as e:
+                            print(f"  Error parsing tweet: {e}")
+                            continue
+                    
+                    browser.close()
+                    return found_tweets
+
+            except Exception as e:
+                print(f"Twitter Scout Error: {e}")
+                return []
+        finally:
+            self._lock.release()
+
+    def batch_engage(self, keywords: List[str], limit: int, auto_like: bool, auto_comment: bool, interaction_agent, tag: str = None) -> int:
+        """
+        Fetches posts AND engages (like/comment) in a SINGLE session.
+        """
+        if not self._lock.acquire(timeout=60):
+            print("[Twitter Scout] Could not acquire lock. Skipping batch engage.")
+            return 0
+            
+        try:
+            print(f"\n[Twitter Scout] Starting BATCH ENGAGE (Auto-Like={auto_like}, Auto-Comment={auto_comment})")
+            
+            query = " OR ".join(f'"{k}"' for k in keywords)
+            search_url = f"https://twitter.com/search?q={query}&src=typed_query&f=live"
+            
+            # Use tag if provided, otherwise try to infer if single keyword
+            current_tag = tag if tag else (keywords[0] if len(keywords) == 1 else None)
+            
+            processed_count = 0
+
+            try:
+                with sync_playwright() as p:
+                    browser = self._get_browser_context(p)
+                    page = browser.new_page()
+                    
+                    # 1. Login Check
+                    self.ensure_logged_in(page)
+
+                    # 2. Search
+                    print(f"  Navigating to Search: {search_url}")
+                    page.goto(search_url)
+                    
+                    try:
+                        page.wait_for_selector('article[data-testid="tweet"]', timeout=15000)
+                    except Exception:
+                        self.login(page)
+                        try:
+                            page.wait_for_selector('article[data-testid="tweet"]', timeout=15000)
+                        except:
+                            print("  No tweets found.")
+                            browser.close()
+                            return 0
+
+                    for _ in range(3):
+                        page.mouse.wheel(0, 1000)
+                        time.sleep(1)
+
+                    tweet_elements = page.query_selector_all('article[data-testid="tweet"]')
+                    
+                    # We need to capture the IDs first because navigating away will destroy elements
+                    tweet_data_list = []
+                    
+                    print(f"  Found {len(tweet_elements)} potential tweets.")
+                    
+                    count = 0
+                    for tweet_el in tweet_elements:
+                        if count >= limit: break
+                        try:
+                            # Basic parsing just to get ID
+                            time_el = tweet_el.query_selector('time')
+                            if not time_el: continue
+                            post_link_el = time_el.query_selector('..')
+                            href = post_link_el.get_attribute('href') if post_link_el else ""
+                            if "status" not in href: continue
+                            
+                            tweet_id = href.split('/status/')[-1].split('?')[0]
+                            
+                            # Skip if we can't find ID
+                            if not tweet_id: continue
+                            
+                            tweet_data_list.append({"id": tweet_id, "href": href})
+                            count += 1
+                        except:
+                            continue
+
+                    print(f"  Processing {len(tweet_data_list)} tweets for engagement...")
+
+                    # 3. Loop and Engage
+                    for item in tweet_data_list:
+                        tweet_id = item["id"]
+                        print(f"  --- Processing Tweet {tweet_id} ---")
+                        
+                        # We must visit the single tweet page to engage reliably
+                        # This also allows us to parse full details cleanly if we wanted to update them
+                        
+                        # First, ensure we have the interaction saved/updated
+                        # (We might re-fetch details on the single page or just use what we have)
+                        # For this v1, let's just navigate and do the work.
+                        
+                        try:
+                            tweet_url = f"https://twitter.com/i/web/status/{tweet_id}"
+                            page.goto(tweet_url)
+                            page.wait_for_selector('article[data-testid="tweet"]', timeout=10000)
+                            
+                            # Extract Text for context (re-parse)
+                            text = "[No Text]"
+                            try:
+                                text_el = page.query_selector('div[data-testid="tweetText"]')
+                                if text_el: text = text_el.inner_text()
+                            except: pass
+                            
+                            # Save/Update DB first
+                            interaction = save_interaction(
+                                platform="Twitter",
+                                external_post_id=tweet_id,
+                                post_content=text,
+                                status="ARCHIVED",
+                                post_url=tweet_url,
+                                tag=current_tag
+                            )
+                            
+                            # Like
+                            if auto_like:
+                                self.like_post(tweet_id, page=page)
+                            
+                            # Comment
+                            if auto_comment:
+                                # Check if we already commented
+                                if interaction.bot_comment:
+                                    print("  Already commented on this tweet. Skipping.")
+                                else:
+                                    # Generate Context
+                                    context_posts = get_all_interactions(limit=10)
+                                    comment_text = interaction_agent.generate_comment(interaction, context_posts)
+                                    
+                                    if comment_text:
+                                        print(f"  Generated Comment: {comment_text}")
+                                        success = self.comment_post(tweet_id, comment_text, page=page)
+                                        if success:
+                                            interaction.bot_comment = comment_text
+                                            interaction.status = "POSTED"
+                                            # Update DB? save_interaction updates fields passed, but here we updated object
+                                            # We should call save_interaction again or update manually.
+                                            # save_interaction handles updates if ID exists.
+                                            save_interaction(
+                                                platform="Twitter",
+                                                external_post_id=tweet_id,
+                                                post_content=text,
+                                                status="POSTED",
+                                                bot_comment=comment_text,
+                                                tag=current_tag
+                                            )
+                            
+                            processed_count += 1
+                            time.sleep(random.uniform(2, 5)) # Human pause
+                            
+                        except Exception as e:
+                            print(f"  Error processing tweet {tweet_id}: {e}")
+                            continue
+
+                    print("  Batch engagement finished. Closing browser in 5 seconds...")
+                    time.sleep(5)
+                    browser.close()
+                    return processed_count
+
+            except Exception as e:
+                print(f"Batch Engage Error: {e}")
+                return 0
+        finally:
+            self._lock.release()
+
+    def like_post(self, tweet_id: str, page: Page = None) -> bool:
+        """
+        Likes a tweet. If page is provided, uses existing session.
+        """
+        should_close = False
+        if page is None:
+            # Standalone mode (original behavior)
+            if not self._lock.acquire(timeout=60): return False
+            should_close = True
+            # ... (Launch browser logic would go here, omitted for brevity as we focus on batch)
+            # For now, let's assume batch mode is the primary user. 
+            # If standalone is needed, we need to replicate the launch logic.
+            # Re-implementing strictly for completeness:
+            try:
+                with sync_playwright() as p:
+                    browser = self._get_browser_context(p)
+                    page = browser.new_page()
+                    return self.like_post(tweet_id, page=page)
+            finally:
+                self._lock.release()
+                return False # The inner call returns, but this outer wrapper handles the context
+
+        # Actual Logic with 'page'
+        try:
+            # Assume we are on the page or need to navigate?
+            # If calling from batch, we are already ON the page usually.
+            # But let's verify URL.
+            if tweet_id not in page.url:
+                url = f"https://twitter.com/i/web/status/{tweet_id}"
+                print(f"  Navigating to {url} for Like...")
                 page.goto(url)
-                
-                # Wait for tweet content to verify page load
                 try:
                     page.wait_for_selector('article[data-testid="tweet"]', timeout=10000)
                 except:
-                    print("  Tweet not found or failed to load.")
-                    browser.close()
                     return False
-                
-                # Wait for Like button
-                # Selectors can be tricky. 'like' or 'unlike'
-                try:
-                    # Check if already liked (unlike button exists)
-                    if page.query_selector('button[data-testid="unlike"]'):
-                        print(f"  Tweet {tweet_id} is already liked.")
-                        browser.close()
-                        return True
-                        
-                    like_button = page.wait_for_selector('button[data-testid="like"]', timeout=5000)
-                    if like_button:
-                        like_button.scroll_into_view_if_needed()
-                        like_button.click()
-                        print(f"  Clicked Like on {tweet_id}")
-                        time.sleep(1) # Grace period
-                        browser.close()
-                        return True
-                            
-                except Exception as e:
-                    print(f"  Could not find like button: {e}")
-                
-                browser.close()
+
+            try:
+                if page.query_selector('button[data-testid="unlike"]'):
+                    print(f"  Tweet {tweet_id} is already liked.")
+                    return True
+                    
+                like_button = page.wait_for_selector('button[data-testid="like"]', timeout=5000)
+                if like_button:
+                    like_button.scroll_into_view_if_needed()
+                    like_button.click()
+                    print(f"  Clicked Like on {tweet_id}")
+                    time.sleep(1)
+                    return True
+            except Exception as e:
+                print(f"  Like failed: {e}")
                 return False
                 
         except Exception as e:
-            print(f"Twitter Like Error: {e}")
+            print(f"Like Error: {e}")
             return False
 
-    def comment_post(self, tweet_id: str, text: str) -> bool:
+    def comment_post(self, tweet_id: str, text: str, page: Page = None) -> bool:
         """
         Replies to a tweet.
         """
-        print(f"[Twitter Scout] Attempting to reply to tweet {tweet_id}")
-        
-        if "test_post" in tweet_id:
-            print("  Skipping comment on test ID")
-            return False
-            
-        url = f"https://twitter.com/i/web/status/{tweet_id}"
-        
-        try:
-            with sync_playwright() as p:
-                browser = p.chromium.launch_persistent_context(
-                    user_data_dir=self.user_data_dir,
-                    headless=self.headless,
-                    args=["--disable-blink-features=AutomationControlled"],
-                    viewport={"width": 1280, "height": 720}
-                )
-                
-                page = browser.new_page()
-                print(f"  Navigating to {url}")
-                page.goto(url)
-                
-                # Wait for tweet to ensure we are on the right page
-                try:
-                    page.wait_for_selector('article[data-testid="tweet"]', timeout=10000)
-                except:
-                    print("  Tweet page failed to load.")
-                    browser.close()
-                    return False
-                
-                # 1. Click Reply Input (The inline one usually at bottom of tweet or "Post your reply")
-                try:
-                    # Try clicking the reply div first to focus
-                    # 'div.public-DraftEditor-content' is the editor content area
-                    
-                    # First, find the editor. On status page, it's usually visible.
-                    # Try to click the "Reply" placeholder text if visible
-                    placeholder = page.query_selector('div[data-testid="tweetTextarea_0_label"]')
-                    if placeholder:
-                        placeholder.click()
-                        
-                    editor = page.wait_for_selector('div.public-DraftEditor-content', timeout=5000)
-                    
-                    if editor:
-                        editor.click()
-                        # Type properly
-                        page.keyboard.type(text, delay=50) 
-                        
-                        time.sleep(1)
-                        
-                        # Click Reply Button
-                        submit_btn = page.wait_for_selector('button[data-testid="tweetButtonInline"]', timeout=5000)
-                        if submit_btn:
-                            if submit_btn.is_disabled():
-                                print("  Reply button disabled.")
-                            else:
-                                submit_btn.click()
-                                print(f"  Replied to {tweet_id}")
-                                time.sleep(3) # Wait for post to submit
-                                browser.close()
-                                return True
-                    else:
-                        print("  Could not find reply editor.")
-                            
-                except Exception as e:
-                    print(f"  Reply failed: {e}")
-                
-                browser.close()
+        if page is None:
+            # Standalone wrapper
+            if not self._lock.acquire(timeout=60): return False
+            try:
+                with sync_playwright() as p:
+                    browser = self._get_browser_context(p)
+                    page = browser.new_page()
+                    return self.comment_post(tweet_id, text, page=page)
+            finally:
+                self._lock.release()
                 return False
 
+        try:
+            # Navigate if needed
+            if tweet_id not in page.url:
+                url = f"https://twitter.com/i/web/status/{tweet_id}"
+                page.goto(url)
+                page.wait_for_selector('article[data-testid="tweet"]', timeout=10000)
+
+            try:
+                # Try clicking the reply div first to focus
+                placeholder = page.query_selector('div[data-testid="tweetTextarea_0_label"]')
+                if placeholder: placeholder.click()
+                    
+                editor = page.wait_for_selector('div.public-DraftEditor-content', timeout=5000)
+                
+                if editor:
+                    editor.click()
+                    page.keyboard.type(text, delay=50) 
+                    time.sleep(1)
+                    
+                    submit_btn = page.wait_for_selector('button[data-testid="tweetButtonInline"]', timeout=5000)
+                    if submit_btn:
+                        if submit_btn.is_disabled():
+                            print("  Reply button disabled.")
+                        else:
+                            submit_btn.click()
+                            print(f"  Replied to {tweet_id}")
+                            time.sleep(3)
+                            return True
+                else:
+                    print("  Could not find reply editor.")
+            except Exception as e:
+                print(f"  Reply failed: {e}")
+            
+            return False
+
         except Exception as e:
-            print(f"Twitter Reply Error: {e}")
+            print(f"Reply Error: {e}")
             return False
 
 twitter_scout = TwitterScout()
