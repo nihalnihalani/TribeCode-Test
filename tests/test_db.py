@@ -53,26 +53,18 @@ def test_get_all_interactions(db_session):
     assert interactions[0].external_post_id == "t1"
     assert interactions[1].external_post_id == "r1"
 
-def test_save_interaction_error_handling(db_session, mocker):
+def test_save_interaction_error_handling(db_session):
     """Test error handling during save."""
     # Mock session.commit to raise exception
-    # We need to mock the session inside save_interaction.
-    # Since save_interaction instantiates SessionLocal(), and we patched SessionLocal in conftest,
-    # we can mock the session returned by SessionLocal.
-    
-    # However, db_session fixture already patches SessionLocal to return a working session class.
-    # To force an error, we might need to mock the commit method of the session instance that SessionLocal() returns.
-    
     from sqlalchemy.exc import SQLAlchemyError
+    from unittest.mock import patch, MagicMock
     
     # Create a mock session that raises error on commit
-    mock_session = mocker.MagicMock()
+    mock_session = MagicMock()
     mock_session.commit.side_effect = SQLAlchemyError("DB Error")
     mock_session.query.return_value.filter_by.return_value.first.return_value = None # No existing record
     
     # Patch SessionLocal to return this mock session
-    # Note: conftest patches SessionLocal to return the real Session class. 
-    # We need to override that patch or patch over it.
-    with mocker.patch("src.database.SessionLocal", return_value=mock_session):
+    with patch("src.database.SessionLocal", return_value=mock_session):
         with pytest.raises(SQLAlchemyError):
             save_interaction("Reddit", "error_post", "content")

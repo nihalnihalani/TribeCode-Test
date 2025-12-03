@@ -47,20 +47,11 @@ def test_scout_trigger(client):
         "limit": 5,
         "query": "test"
     })
-    # Redirects to interactions
-    assert response.status_code == 200 # TestClient follows redirects by default? No, usually 303 unless follow_redirects=True.
-    # Wait, Starlette TestClient follows redirects by default is False, but recent versions might differ.
-    # Let's check history or status code.
-    # Actually, standard response is 303.
-    # If TestClient follows redirects, it will be 200 (interactions page).
-    # If not, 303.
-    # Let's just check if it worked.
-    
-    # The mock_reddit.fetch_posts should be called.
-    # But it's a background task.
-    # TestClient usually runs background tasks synchronously after response?
-    # Or we need to check if task was added.
-    pass
+    # Redirects to interactions. TestClient usually follows or returns 200/303.
+    # With TestClient, it usually follows redirects by default unless specified.
+    # Let's verify.
+    assert response.status_code == 200
+    assert "/interactions" in str(response.url)
 
 def test_like_interaction(client, db_session):
     # Seed
@@ -69,19 +60,11 @@ def test_like_interaction(client, db_session):
     db_session.commit()
     db_session.refresh(interaction)
     
-    # We need to ensure the mock_reddit in app is the SAME as what we check.
-    # The client fixture mocks it. We need access to those mocks.
-    # But the fixture yields 'c'.
-    # We can re-patch in the test or use a class-based approach, 
-    # OR return mocks from fixture.
-    
-    # For simplicity, let's trust the response code for now, 
-    # or rely on `patch` inside the test function if we want to verify calls.
-    
     with patch("src.web.app.reddit_scout") as mock_reddit:
          mock_reddit.like_post.return_value = True
          response = client.post(f"/interactions/{interaction.id}/like")
-         assert response.status_code in [200, 303]
+         # Redirects
+         assert response.status_code == 200 
          mock_reddit.like_post.assert_called_with("r1")
 
 def test_comment_interaction(client, db_session):
@@ -97,12 +80,13 @@ def test_comment_interaction(client, db_session):
         mock_twitter.comment_post.return_value = True
         
         response = client.post(f"/interactions/{interaction.id}/comment")
-        assert response.status_code in [200, 303]
+        assert response.status_code == 200
         
         mock_agent.generate_comment.assert_called()
         mock_twitter.comment_post.assert_called_with("t1", "Test Comment")
         
         # Verify DB update
-        db_session.refresh(interaction)
-        assert interaction.bot_comment == "Test Comment"
-        assert interaction.status == "POSTED"
+        db_session.expire_all()
+        updated = db_session.query(Interaction).filter_by(id=interaction.id).first()
+        assert updated.bot_comment == "Test Comment"
+        assert updated.status == "POSTED"

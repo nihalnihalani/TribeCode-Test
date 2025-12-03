@@ -116,35 +116,36 @@ def run_scout_task(platform: str, limit: int, query: str = "build in public"):
         reddit_scout.fetch_posts(subreddits=subs, search_query=query, limit=limit)
     
     if platform == "twitter" or platform == "all":
-        # Pass the query to Twitter Scout
-        print(f"Running Twitter Scout for query: {query}")
-        raw_posts = twitter_scout.fetch_posts(keywords=[query], limit=limit)
-        
-        # Apply Filters
-        # 1. Keyword Prefilter (Fast)
-        # Note: Twitter search already does keyword matching, but we can filter out "hiring" etc.
-        filtered_posts = keyword_prefilter(raw_posts)
-        print(f"  [Filter] {len(raw_posts)} -> {len(filtered_posts)} after keyword filter")
-        
-        # 2. Semantic Filter (Smart)
-        # Only apply if we have posts left
-        if filtered_posts:
-            final_posts = semantic_filter.filter_posts(filtered_posts)
-            print(f"  [Filter] {len(filtered_posts)} -> {len(final_posts)} after semantic filter")
+        # Handle Auto-Pilot or Multiple Keywords
+        search_queries = []
+        if query.strip().lower() == "auto":
+            # Auto-Pilot Keywords
+            search_queries = ["build in public", "indie hacker", "saas mvp", "side project"]
         else:
-            final_posts = []
-            
-        # Note: twitter_scout.fetch_posts ALREADY saves to DB with ARCHIVED status.
-        # We might want to update their status to 'QUALIFIED' if they pass filters?
-        # Or just rely on the fetch to save everything and we filter on display?
-        # For "Automatic", we probably want to know which ones are "Good".
-        # Let's update the status in DB for the ones that passed.
+            # Handle comma-separated manual input (e.g., "ai, crypto")
+            search_queries = [k.strip() for k in query.split(",") if k.strip()]
         
-        for post in final_posts:
-            # We need to update the interaction in DB
-            # This requires a DB session. 
-            # Ideally fetch_posts returns objects we can update, or we do a quick update query.
-            pass # For now, we just trust the Scout archived them.
+        print(f"Running Twitter Scout for queries: {search_queries}")
+        
+        for q in search_queries:
+            print(f"  [Twitter Scout] Searching for: {q}")
+            raw_posts = twitter_scout.fetch_posts(keywords=[q], limit=limit)
+            
+            # Apply Filters
+            # 1. Keyword Prefilter (Fast)
+            filtered_posts = keyword_prefilter(raw_posts)
+            print(f"  [Filter] {len(raw_posts)} -> {len(filtered_posts)} after keyword filter")
+            
+            # 2. Semantic Filter (Smart)
+            if filtered_posts:
+                final_posts = semantic_filter.filter_posts(filtered_posts)
+                print(f"  [Filter] {len(filtered_posts)} -> {len(final_posts)} after semantic filter")
+            else:
+                final_posts = []
+                
+            # Small delay between queries to be polite
+            if len(search_queries) > 1:
+                time.sleep(5)
 
 @app.post("/scout")
 def trigger_scout(
