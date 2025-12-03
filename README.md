@@ -1,90 +1,126 @@
-# <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=dL3M6FPblFer&format=png&size=48&color=ffffff"><img src="https://img.icons8.com/?id=dL3M6FPblFer&format=png&size=48" height="32"/></picture> Agent Rules & Guidelines
+# <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=dL3M6FPblFer&format=png&size=48&color=ffffff"><img src="https://img.icons8.com/?id=dL3M6FPblFer&format=png&size=48" height="32"/></picture> VibeBot: Autonomous Build-in-Public Engagement Agent
 
-Welcome to the **TribeCode-Test** project! This repository follows specific guidelines to ensure efficient development, seamless integration with MCP tools (Sanity, Vercel), and a clean git workflow.
-
----
-
-## <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=2906&format=png&size=48&color=ffffff"><img src="https://img.icons8.com/?id=2906&format=png&size=48" height="24"/></picture> User Rules
-
-### <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=38388&format=png&size=48&color=ffffff"><img src="https://img.icons8.com/?id=38388&format=png&size=48" height="20"/></picture> Git Workflow
-- **Branching Strategy**: All substantial changes must be pushed to the branch `nihal-branch`.
-- **Commit Policy**: If the branch doesn't exist, it is created automatically. Changes are committed with descriptive messages and pushed immediately.
+VibeBot is an autonomous agent designed to identify, analyze, and engage with "Vibe Coding" and "Build in Public" content across Reddit and LinkedIn. Unlike simple automation scripts, this system is built with a production-first mindset, featuring comprehensive unit testing, modular agentic architecture, and local archival persistence.
 
 ---
 
-## <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=11151&format=png&size=48&color=ffffff"><img src="https://img.icons8.com/?id=11151&format=png&size=48" height="24"/></picture> General Agent Guidelines
+## <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=2754&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=2754&format=png&size=24" height="24"/></picture> Problem Statement
 
-### <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=11151&format=png&size=48&color=ffffff"><img src="https://img.icons8.com/?id=11151&format=png&size=48" height="20"/></picture> Tool Usage
-- **<picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=mcCRHk2xvR7f&format=png&size=48&color=ffffff"><img src="https://img.icons8.com/?id=mcCRHk2xvR7f&format=png&size=48" height="16"/></picture> Natural Language**: We describe actions naturally without referencing internal tool names.
-- **<picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=6697&format=png&size=48&color=ffffff"><img src="https://img.icons8.com/?id=6697&format=png&size=48" height="16"/></picture> Specialized Tools**: We prefer specific file operations (`read_file`) over generic shell commands.
-- **<picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=kktvCbkDLbNb&format=png&size=48&color=ffffff"><img src="https://img.icons8.com/?id=kktvCbkDLbNb&format=png&size=48" height="16"/></picture> Parallelism**: Independent operations are executed in parallel to save time.
+**The Context**: The "Build in Public" movement has created a high-value stream of content across fragmented platforms. Developers are constantly shipping MVPs, but finding these genuine signals amidst the noise is difficult.
 
-### <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=WwWusvLMTFd7&format=png&size=48&color=ffffff"><img src="https://img.icons8.com/?id=WwWusvLMTFd7&format=png&size=48" height="20"/></picture> Code Editing & Exploration
-- **<picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=WwWusvLMTFd7&format=png&size=48&color=ffffff"><img src="https://img.icons8.com/?id=WwWusvLMTFd7&format=png&size=48" height="16"/></picture> Semantic Search**: We start broad and narrow down, ensuring we find the right context.
-- **<picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=DHOunydDcKfC&format=png&size=48&color=ffffff"><img src="https://img.icons8.com/?id=DHOunydDcKfC&format=png&size=48" height="16"/></picture> Context Awareness**: We trace symbols and understand the "full picture" before making edits.
-- **<picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=6697&format=png&size=48&color=ffffff"><img src="https://img.icons8.com/?id=6697&format=png&size=48" height="16"/></picture> Style & Conventions**: We respect existing coding patterns and fix any linter errors we introduce.
-- **<picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=kktvCbkDLbNb&format=png&size=48&color=ffffff"><img src="https://img.icons8.com/?id=kktvCbkDLbNb&format=png&size=48" height="16"/></picture> No Reverts**: We trust the user's direction and do not revert changes unless asked.
+### <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=6yqvDYg5ZpoG&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=6yqvDYg5ZpoG&format=png&size=24" height="20"/></picture> The Pain Points
+- **High Noise-to-Signal Ratio**: Manually filtering for "vibe coding" posts is inefficient.
+- **Inconsistent Engagement**: Sustaining supportive interaction (liking/commenting) manually leads to burnout.
+- **Data Ephemerality**: Valuable interactions are lost to the feed with no central archive.
 
----
-
-## <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=38536&format=png&size=48&color=ffffff"><img src="https://img.icons8.com/?id=38536&format=png&size=48" height="24"/></picture> Browser & Testing Guidelines
-
-### <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=38536&format=png&size=48&color=ffffff"><img src="https://img.icons8.com/?id=38536&format=png&size=48" height="20"/></picture> Testing Flow
-1.  **<picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=38536&format=png&size=48&color=ffffff"><img src="https://img.icons8.com/?id=38536&format=png&size=48" height="16"/></picture> Navigate**: Go to the target page.
-2.  **<picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=vmqv135kp5Ty&format=png&size=48&color=ffffff"><img src="https://img.icons8.com/?id=vmqv135kp5Ty&format=png&size=48" height="16"/></picture> Snapshot**: Capture the page state.
-3.  **<picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=mcCRHk2xvR7f&format=png&size=48&color=ffffff"><img src="https://img.icons8.com/?id=mcCRHk2xvR7f&format=png&size=48" height="16"/></picture> Interact**: Click, type, or trigger events.
-4.  **<picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=vmqv135kp5Ty&format=png&size=48&color=ffffff"><img src="https://img.icons8.com/?id=vmqv135kp5Ty&format=png&size=48" height="16"/></picture> Re-snapshot**: Verify the outcome.
-5.  **<picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=vmqv135kp5Ty&format=png&size=48&color=ffffff"><img src="https://img.icons8.com/?id=vmqv135kp5Ty&format=png&size=48" height="16"/></picture> Visual Inspection**: Take screenshots when visual verification is needed.
-
-### <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=91AOdnippsUN&format=png&size=48&color=ffffff"><img src="https://img.icons8.com/?id=91AOdnippsUN&format=png&size=48" height="20"/></picture> Restrictions
-- No local server startup unless requested.
-- No port guessing.
-- No shell interaction for browser tasks.
+### <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=zS3cCsyXeDM9&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=zS3cCsyXeDM9&format=png&size=24" height="20"/></picture> The Solution
+An agentic system that **Detects** relevance, **Engages** intelligently using LLMs, and **Archives** interactions to a local SQLite database for future analysis.
 
 ---
 
-## <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=11788&format=png&size=48&color=ffffff"><img src="https://img.icons8.com/?id=11788&format=png&size=48" height="24"/></picture> Vercel MCP Instructions
+## <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=1IdNNmn0TzUw&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=1IdNNmn0TzUw&format=png&size=24" height="24"/></picture> System Architecture
 
-### <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=DHOunydDcKfC&format=png&size=48&color=ffffff"><img src="https://img.icons8.com/?id=DHOunydDcKfC&format=png&size=48" height="20"/></picture> Documentation & Platform
-- **<picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=WwWusvLMTFd7&format=png&size=48&color=ffffff"><img src="https://img.icons8.com/?id=WwWusvLMTFd7&format=png&size=48" height="16"/></picture> Search**: We use documentation tools for Next.js and Vercel-specific queries.
+The project follows a Multi-Agent approach (refer to docs/Agents+Skills.md for deep dive):
 
-### <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=GENqO55M9bA9&format=png&size=48&color=ffffff"><img src="https://img.icons8.com/?id=GENqO55M9bA9&format=png&size=48" height="20"/></picture> Deployment Access
-- **<picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=91AOdnippsUN&format=png&size=48&color=ffffff"><img src="https://img.icons8.com/?id=91AOdnippsUN&format=png&size=48" height="16"/></picture> Protected Deployments**: We handle 403/401 errors by generating shareable links with auth cookies.
-- **<picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=kktvCbkDLbNb&format=png&size=48&color=ffffff"><img src="https://img.icons8.com/?id=kktvCbkDLbNb&format=png&size=48" height="16"/></picture> Fetch Fallback**: We have fallback mechanisms for environments without cookie support.
+1.  **<picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=O4Izwf32jaHl&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=O4Izwf32jaHl&format=png&size=24" height="20"/></picture> The Scout (Discovery Agent)**
+    -   **Role**: Scrapes and fetches posts from targeted subreddits and LinkedIn hashtags.
+    -   **Skills**: `fetch_reddit_feed`, `search_linkedin`, `heuristic_filter`.
+    -   **Unit Tests**: Mocks API responses to ensure rate limits are respected and filters work correctly.
 
-### <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=11151&format=png&size=48&color=ffffff"><img src="https://img.icons8.com/?id=11151&format=png&size=48" height="20"/></picture> Project Management
-- **<picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=WwWusvLMTFd7&format=png&size=48&color=ffffff"><img src="https://img.icons8.com/?id=WwWusvLMTFd7&format=png&size=48" height="16"/></picture> Discovery**: We actively discover project and team IDs to ensure smooth operations.
+2.  **<picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=102698&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=102698&format=png&size=24" height="20"/></picture> The Vibe Check (Engagement Agent)**
+    -   **Role**: Analyzes post content and generates context-aware comments.
+    -   **Skills**: `analyze_sentiment`, `generate_response` (LLM), `safety_check`.
+    -   **Unit Tests**: Validates that generated comments are positive, non-spammy, and within character limits.
 
----
-
-## <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=gxuEDgFteZdP&format=png&size=48&color=ffffff"><img src="https://img.icons8.com/?id=gxuEDgFteZdP&format=png&size=48" height="24"/></picture> Sanity MCP Instructions
-
-### <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=dL3M6FPblFer&format=png&size=48&color=ffffff"><img src="https://img.icons8.com/?id=dL3M6FPblFer&format=png&size=48" height="20"/></picture> Core Agent Principles
-- **<picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=38388&format=png&size=48&color=ffffff"><img src="https://img.icons8.com/?id=38388&format=png&size=48" height="16"/></picture> Persistence**: We don't stop until the query is resolved.
-- **<picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=WwWusvLMTFd7&format=png&size=48&color=ffffff"><img src="https://img.icons8.com/?id=WwWusvLMTFd7&format=png&size=48" height="16"/></picture> No Guessing**: We use tools to get facts.
-- **<picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=DHOunydDcKfC&format=png&size=48&color=ffffff"><img src="https://img.icons8.com/?id=DHOunydDcKfC&format=png&size=48" height="16"/></picture> Planning**: We plan before we act.
-- **<picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=WwWusvLMTFd7&format=png&size=48&color=ffffff"><img src="https://img.icons8.com/?id=WwWusvLMTFd7&format=png&size=48" height="16"/></picture> Resource Clarification**: We always ask which project/dataset to use.
-
-### <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=1671&format=png&size=48&color=ffffff"><img src="https://img.icons8.com/?id=1671&format=png&size=48" height="20"/></picture> Content Handling
-- **<picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=DHOunydDcKfC&format=png&size=48&color=ffffff"><img src="https://img.icons8.com/?id=DHOunydDcKfC&format=png&size=48" height="16"/></picture> Schema-First**: We check the schema (`get_schema`) before touching content.
-- **<picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=2906&format=png&size=48&color=ffffff"><img src="https://img.icons8.com/?id=2906&format=png&size=48" height="16"/></picture> Explicit Confirmation**: We confirm resources with you.
-- **<picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=91AOdnippsUN&format=png&size=48&color=ffffff"><img src="https://img.icons8.com/?id=91AOdnippsUN&format=png&size=48" height="16"/></picture> Limits**: We batch document creation (max 5) and use async modes.
-
-### <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=WwWusvLMTFd7&format=png&size=48&color=ffffff"><img src="https://img.icons8.com/?id=WwWusvLMTFd7&format=png&size=48" height="20"/></picture> Searching for Content
-- **<picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=WwWusvLMTFd7&format=png&size=48&color=ffffff"><img src="https://img.icons8.com/?id=WwWusvLMTFd7&format=png&size=48" height="16"/></picture> Precision**: We find the right types first.
-- **<picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=kktvCbkDLbNb&format=png&size=48&color=ffffff"><img src="https://img.icons8.com/?id=kktvCbkDLbNb&format=png&size=48" height="16"/></picture> Multi-Step**: We resolve references before querying primary content.
-- **<picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=gxuEDgFteZdP&format=png&size=48&color=ffffff"><img src="https://img.icons8.com/?id=gxuEDgFteZdP&format=png&size=48" height="16"/></picture> Structure Awareness**: We check for arrays vs. single values.
-
-### <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=6697&format=png&size=48&color=ffffff"><img src="https://img.icons8.com/?id=6697&format=png&size=48" height="20"/></picture> Document Operations & GROQ
-- **<picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=mcCRHk2xvR7f&format=png&size=48&color=ffffff"><img src="https://img.icons8.com/?id=mcCRHk2xvR7f&format=png&size=48" height="16"/></picture> Action-First**: We perform creates/updates immediately.
-- **<picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=gxuEDgFteZdP&format=png&size=48&color=ffffff"><img src="https://img.icons8.com/?id=gxuEDgFteZdP&format=png&size=48" height="16"/></picture> ID Handling**: We respect draft and release ID prefixes.
-- **<picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=6697&format=png&size=48&color=ffffff"><img src="https://img.icons8.com/?id=6697&format=png&size=48" height="16"/></picture> Mutation Safety**: We handle references carefully (patch after create, use `unset`).
-- **<picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=mcCRHk2xvR7f&format=png&size=48&color=ffffff"><img src="https://img.icons8.com/?id=mcCRHk2xvR7f&format=png&size=48" height="16"/></picture> GROQ Syntax**: We use proper quoting and search syntax (`match text`).
-
-### <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=GENqO55M9bA9&format=png&size=48&color=ffffff"><img src="https://img.icons8.com/?id=GENqO55M9bA9&format=png&size=48" height="20"/></picture> Releases & Versioning
-- **<picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=91AOdnippsUN&format=png&size=48&color=ffffff"><img src="https://img.icons8.com/?id=91AOdnippsUN&format=png&size=48" height="16"/></picture> Staging**: We use releases to manage content updates.
-- **<picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=vmqv135kp5Ty&format=png&size=48&color=ffffff"><img src="https://img.icons8.com/?id=vmqv135kp5Ty&format=png&size=48" height="16"/></picture> Perspectives**: We query the right view (drafts, published, release).
+3.  **<picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=443&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=443&format=png&size=24" height="20"/></picture> The Archivist (Persistence Agent)**
+    -   **Role**: Manages the local database state.
+    -   **Skills**: `check_deduplication`, `commit_transaction`, `export_logs`.
+    -   **Unit Tests**: Ensures idempotency (never commenting on the same post twice).
 
 ---
 
-*This README is auto-generated based on the `agent.md` rules file.*
+## <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=18506&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=18506&format=png&size=24" height="24"/></picture> Tech Stack
+
+-   **Core**: Python 3.11+
+-   **Orchestration**: LangChain / Pydantic AI (or your preferred framework)
+-   **Database**: SQLite (local persistence)
+-   **Testing**: pytest + unittest.mock
+-   **APIs**: PRAW (Reddit), LinkedIn API, OpenAI/Anthropic (Generation)
+
+---
+
+## <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=56793&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=56793&format=png&size=24" height="24"/></picture> Testing Strategy (Priority #1)
+
+We enforce a strict TDD (Test Driven Development) approach. No feature is merged without accompanying tests.
+
+### Running Tests
+
+```bash
+# Run all tests with verbose output
+pytest -v
+
+# Run only the agent logic tests
+pytest tests/test_agents.py
+```
+
+### Key Test Suites
+-   `tests/test_discovery.py`: Mocks JSON responses to verify filtering logic.
+-   `tests/test_safety.py`: adversarial testing against the LLM prompt to prevent toxic output.
+-   `tests/test_db.py`: Verifies schema integrity and deduplication logic.
+
+---
+
+## <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=gxuEDgFteZdP&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=gxuEDgFteZdP&format=png&size=24" height="24"/></picture> Data Schema (Local DB)
+
+We use a lightweight interactions table to archive all activity.
+
+```sql
+CREATE TABLE interactions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    platform TEXT NOT NULL,      -- 'Reddit' or 'LinkedIn'
+    external_post_id TEXT UNIQUE,-- The platform's native ID
+    post_content TEXT,           -- The user's original post
+    bot_comment TEXT,            -- What we replied
+    status TEXT,                 -- 'PLANNED', 'POSTED', 'ARCHIVED'
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+---
+
+## <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=zTcaj4KnPtWt&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=zTcaj4KnPtWt&format=png&size=24" height="24"/></picture> Getting Started
+
+1.  **Clone the Repo**
+    ```bash
+    git clone https://github.com/yourusername/vibebot.git
+    cd vibebot
+    ```
+
+2.  **Environment Variables**
+    Create a `.env` file based on `.env.example`:
+    ```ini
+    REDDIT_CLIENT_ID=...
+    REDDIT_CLIENT_SECRET=...
+    OPENAI_API_KEY=...
+    DATABASE_URL=sqlite:///vibebot.db
+    ```
+
+3.  **Install Dependencies**
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+4.  **Run the Scout**
+    ```bash
+    python main.py --mode=scout
+    ```
+
+---
+
+## <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=876&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=876&format=png&size=24" height="24"/></picture> Ethics & Safety
+
+This bot is designed to be supportive, not spammy.
+
+-   **Rate Limits**: The bot is hard-coded to sleep between actions to mimic human behavior.
+-   **Disclosure**: The User-Agent string identifies this as a bot.
+-   **Content Policy**: The `safety_check` skill explicitly rejects posts about politics, tragedy, or unrelated viral content.
