@@ -17,7 +17,11 @@
 
         <div class="form-group">
             <label class="form-label">Twitter API Key</label>
-            <input type="text" class="form-control" value="************" disabled style="background: #f9fafb; color: #9ca3af;">
+            {% if twitter_key_present %}
+                <input type="text" class="form-control" value="************ (Configured)" disabled style="background: #e6fffa; color: #047857;">
+            {% else %}
+                <input type="text" class="form-control" value="Not Configured" disabled style="background: #fee2e2; color: #b91c1c;">
+            {% endif %}
         </div>
 
         <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #f3f4f6;">

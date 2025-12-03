@@ -1,0 +1,7 @@
+.env
+twitter_auth_data/
+vibebot.db
+__pycache__/
+*.pyc
+.DS_Store
+

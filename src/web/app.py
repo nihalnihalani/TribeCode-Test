@@ -81,7 +81,12 @@ def scout_form(request: Request):
 
 @app.get("/settings")
 def settings_page(request: Request):
-    return templates.TemplateResponse("settings.html", {"request": request})
+    # Check for API keys
+    twitter_key_present = bool(os.getenv("TWITTER_API_KEY"))
+    return templates.TemplateResponse("settings.html", {
+        "request": request,
+        "twitter_key_present": twitter_key_present
+    })
 
 @app.post("/settings/twitter-login")
 def trigger_twitter_login(background_tasks: BackgroundTasks):
