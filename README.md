@@ -1,118 +1,119 @@
 # VibeBot: Autonomous Build-in-Public Engagement Agent
 
-VibeBot is an autonomous agent designed to identify, analyze, and engage with "Vibe Coding" and "Build in Public" content across Reddit and LinkedIn. Unlike simple automation scripts, this system is built with a production-first mindset, featuring comprehensive unit testing, modular agentic architecture, and local archival persistence.
+VibeBot is an autonomous agent designed to identify, analyze, and engage with "Build in Public" and "Vibe Coding" content on X (Twitter). Unlike simple automation scripts, this system is built with a production-first mindset, featuring comprehensive unit testing, modular agentic architecture, and local archival persistence.
 
-## <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=417&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=417&format=png&size=24" height="24"/></picture> Problem Statement
+## <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=37410&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=37410&format=png&size=24" height="24"/></picture> Project Overview
 
-**The Context** The "Build in Public" movement has created a high-value stream of content across fragmented platforms. Developers are constantly shipping MVPs, but finding these genuine signals amidst the noise is difficult.
+The "Build in Public" movement on X has created a high-velocity stream of content. Developers are shipping MVPs daily, but finding genuine signals amidst the noise is difficult. VibeBot solves this by:
+1.  **Scouting** X for high-signal keywords (e.g., "build in public", "vibe coding").
+2.  **Filtering** noise using heuristic and semantic analysis.
+3.  **Engaging** authentically using LLMs (Claude 3.5 Sonnet).
+4.  **Archiving** interactions for long-term analysis.
 
-### The Pain Points
+---
 
-- **High Noise-to-Signal Ratio**: Manually filtering for "vibe coding" posts is inefficient.
-- **Inconsistent Engagement**: Sustaining supportive interaction (liking/commenting) manually leads to burnout.
-- **Data Ephemerality**: Valuable interactions are lost to the feed with no central archive.
+## <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=6Fsj3rv2DCmG&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=6Fsj3rv2DCmG&format=png&size=24" height="24"/></picture> Key Features
 
-### The Solution
-An agentic system that **Detects** relevance, **Engages** intelligently using LLMs, and **Archives** interactions to a local SQLite database for future analysis.
+### 1. The Scout (Discovery Agent)
+<picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=10601&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=10601&format=png&size=24" height="24"/></picture> **Radar & Search**
+- **Autonomous Browsing**: Uses Playwright to navigate X safely and effectively.
+- **Smart Queries**: targeted searches for keywords like `#buildinpublic`, `indie hacker`, and `saas mvp`.
+- **Rate Limiting**: Hard-coded sleeps and human-like browsing patterns to ensure account safety.
+- **Deduplication**: Never processes the same tweet twice.
 
-## <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=2799&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=2799&format=png&size=24" height="24"/></picture> System Architecture
+### 2. The Vibe Check (Intelligence Agent)
+<picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=2070&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=2070&format=png&size=24" height="24"/></picture> **Analysis & Engagement**
+- **Context Awareness**: Analyzes the tweet's text, author, and metrics.
+- **LLM-Powered**: Uses Claude 3.5 Sonnet to generate genuine, non-spammy replies.
+- **Safety Rails**: Filters out political, tragic, or unrelated viral content.
+- **Personality**: Adopts a "casual developer" persona (lowercase usage, specific technical questions).
 
-The project follows a Multi-Agent approach (refer to docs/Agents+Skills.md for deep dive):
+### 3. The Archivist (Persistence Layer)
+<picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=11360&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=11360&format=png&size=24" height="24"/></picture> **Database & Memory**
+- **Local Storage**: SQLite database stores every interaction, tweet, and generated reply.
+- **Audit Trail**: Keeps track of status (`ARCHIVED`, `PLANNED`, `POSTED`).
+- **Metrics Tracking**: Stores like/retweet/reply counts at the time of capture.
 
-1. **The Scout (Discovery Agent)**
-   - **Role**: Scrapes and fetches posts from targeted subreddits and LinkedIn hashtags.
-   - **Skills**: `fetch_reddit_feed`, `search_linkedin`, `heuristic_filter`.
-   - **Unit Tests**: Mocks API responses to ensure rate limits are respected and filters work correctly.
+### 4. Human-in-the-Loop Dashboard
+<picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=aVHe2jHuORcA&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=aVHe2jHuORcA&format=png&size=24" height="24"/></picture> **Control Center**
+- **Web UI**: A clean, modern dashboard built with FastAPI and Jinja2.
+- **Feed View**: Review captured tweets in a card-based layout.
+- **Manual Overrides**: Manually trigger "Like" or "Reply" actions from the UI.
+- **Campaigns**: Launch specific scouting missions with custom keywords.
 
-2. **The Vibe Check (Engagement Agent)**
-   - **Role**: Analyzes post content and generates context-aware comments.
-   - **Skills**: `analyze_sentiment`, `generate_response` (LLM), `safety_check`.
-   - **Unit Tests**: Validates that generated comments are positive, non-spammy, and within character limits.
-
-3. **The Archivist (Persistence Agent)**
-   - **Role**: Manages the local database state.
-   - **Skills**: `check_deduplication`, `commit_transaction`, `export_logs`.
-   - **Unit Tests**: Ensures idempotency (never commenting on the same post twice).
+---
 
 ## <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=11240&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=11240&format=png&size=24" height="24"/></picture> Tech Stack
 
 - **Core**: Python 3.11+
-- **Orchestration**: LangChain / Pydantic AI (or your preferred framework)
-- **Database**: SQLite (local persistence)
-- **Testing**: pytest + unittest.mock
-- **APIs**: PRAW (Reddit), LinkedIn API, OpenAI/Anthropic (Generation)
+- **Browser Automation**: Playwright (for X interaction)
+- **Web Framework**: FastAPI + Jinja2 (Dashboard)
+- **Database**: SQLite + SQLAlchemy
+- **AI/LLM**: Anthropic Claude 3.5 Sonnet
+- **Testing**: pytest
 
-## <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=111782&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=111782&format=png&size=24" height="24"/></picture> Testing Strategy (Priority #1)
+---
 
-We enforce a strict TDD (Test Driven Development) approach. No feature is merged without accompanying tests.
+## <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=2177&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=2177&format=png&size=24" height="24"/></picture> Getting Started
 
-### Running Tests
-
-```bash
-# Run all tests with verbose output
-pytest -v
-
-# Run only the agent logic tests
-pytest tests/test_agents.py
-```
-
-### Key Test Suites
-
-- `tests/test_discovery.py`: Mocks JSON responses to verify filtering logic.
-- `tests/test_safety.py`: adversarial testing against the LLM prompt to prevent toxic output.
-- `tests/test_db.py`: Verifies schema integrity and deduplication logic.
-
-## <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=11360&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=11360&format=png&size=24" height="24"/></picture> Data Schema (Local DB)
-
-We use a lightweight interactions table to archive all activity.
-
-```sql
-CREATE TABLE interactions (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    platform TEXT NOT NULL,      -- 'Reddit' or 'LinkedIn'
-    external_post_id TEXT UNIQUE,-- The platform's native ID
-    post_content TEXT,           -- The user's original post
-    bot_comment TEXT,            -- What we replied
-    status TEXT,                 -- 'PLANNED', 'POSTED', 'ARCHIVED'
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-);
-```
-
-## <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=11564&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=11564&format=png&size=24" height="24"/></picture> Getting Started
-
-### Clone the Repo
-
+### 1. Clone the Repo
 ```bash
 git clone https://github.com/yourusername/vibebot.git
 cd vibebot
 ```
 
-### Environment Variables
-Create a `.env` file based on `.env.example`:
-
-```ini
-REDDIT_CLIENT_ID=...
-REDDIT_CLIENT_SECRET=...
-OPENAI_API_KEY=...
-DATABASE_URL=sqlite:///vibebot.db
-```
-
-### Install Dependencies
-
+### 2. Install Dependencies
 ```bash
 pip install -r requirements.txt
+playwright install chromium
 ```
 
-### Run the Scout
+### 3. Environment Setup
+Create a `.env` file with your API keys:
+
+```ini
+ANTHROPIC_API_KEY=sk-ant-...
+DATABASE_URL=sqlite:///vibebot.db
+# Optional: Twitter credentials if we move to API later, 
+# currently uses browser profile in 'twitter_auth_data'
+```
+
+### 4. Authentication (Browser Profile)
+VibeBot uses a persistent browser profile to avoid constant logins.
+Run the login helper to set up your session:
 
 ```bash
-python main.py --mode=scout
+python -c "from src.utils.browser_setup import setup_twitter_login; setup_twitter_login()"
 ```
+*This will open a browser window. Log in to X manually, then close the browser. Your session cookies will be saved.*
+
+### 5. Run the Agent
+Start the web dashboard and the auto-scout background process:
+
+```bash
+python main.py
+```
+Visit `http://localhost:8000` to see the dashboard.
+
+---
+
+## <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=111782&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=111782&format=png&size=24" height="24"/></picture> Testing
+
+We enforce strict TDD. Run tests before making changes.
+
+```bash
+# Run all tests
+pytest -v
+
+# Run specific agent tests
+pytest tests/test_agents.py
+```
+
+---
 
 ## <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=876&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=876&format=png&size=24" height="24"/></picture> Ethics & Safety
 
-This bot is designed to be supportive, not spammy.
-
-- **Rate Limits**: The bot is hard-coded to sleep between actions to mimic human behavior.
-- **Disclosure**: The User-Agent string identifies this as a bot.
-- **Content Policy**: The `safety_check` skill explicitly rejects posts about politics, tragedy, or unrelated viral content.
+- **No Spam**: The bot is designed to add value, not noise.
+- **Transparency**: The User-Agent allows platforms to identify the traffic.
+- **Rate Limits**: We respect the implicit rate limits of the web platform to avoid burdening servers.
+- **Content Safety**: We do not engage with harmful or controversial content.
