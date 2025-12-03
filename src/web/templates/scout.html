@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Scout for Content</h1>
+<div class="card" style="max-width: 600px;">
+    <p>Trigger the Scout Agent to fetch recent posts from your target platforms.</p>
+    <form action="/scout" method="post">
+        <div style="margin-bottom: 1rem;">
+            <label for="platform" style="display: block; margin-bottom: 0.5rem;">Platform:</label>
+            <select name="platform" id="platform" style="width: 100%; padding: 0.5rem;">
+                <option value="reddit">Reddit (r/saas, r/startups...)</option>
+                <option value="twitter">Twitter/X (#buildinpublic)</option>
+                <option value="all">All Platforms</option>
+            </select>
+        </div>
+        
+        <div style="margin-bottom: 1rem;">
+            <label for="limit" style="display: block; margin-bottom: 0.5rem;">Limit (Posts per platform):</label>
+            <input type="number" name="limit" id="limit" value="5" min="1" max="50" style="width: 100%; padding: 0.5rem;">
+        </div>
+
+        <button type="submit" class="btn">🚀 Start Scouting</button>
+    </form>
+</div>
+{% endblock %}
+

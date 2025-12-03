@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Dashboard</h1>
+
+<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem;">
+    <div class="card">
+        <h3>Total Interactions</h3>
+        <p style="font-size: 2rem; font-weight: bold;">{{ stats.total }}</p>
+    </div>
+    <div class="card">
+        <h3>Reddit Posts</h3>
+        <p style="font-size: 2rem; font-weight: bold; color: #ff4500;">{{ stats.reddit }}</p>
+    </div>
+    <div class="card">
+        <h3>Twitter Posts</h3>
+        <p style="font-size: 2rem; font-weight: bold; color: #1da1f2;">{{ stats.twitter }}</p>
+    </div>
+</div>
+
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h2>Recent Activity</h2>
+        <a href="/interactions" class="btn btn-sm">View All</a>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Platform</th>
+                <th>Content Snippet</th>
+                <th>Date</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for interaction in interactions %}
+            <tr>
+                <td>
+                    <span class="platform-badge {{ interaction.platform.lower() }}">
+                        {{ interaction.platform }}
+                    </span>
+                </td>
+                <td>{{ interaction.post_content[:80] }}...</td>
+                <td>{{ interaction.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                <td>{{ interaction.status }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="4">No interactions yet. Start scouting!</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+

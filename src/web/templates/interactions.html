@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+    <h1>Archived Interactions</h1>
+    <a href="/scout" class="btn">Scout New</a>
+</div>
+
+<div class="card">
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Platform</th>
+                <th>Content</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for interaction in interactions %}
+            <tr>
+                <td>{{ interaction.id }}</td>
+                <td>
+                    <span class="platform-badge {{ interaction.platform.lower() }}">
+                        {{ interaction.platform }}
+                    </span>
+                    <br>
+                    <small style="color: #777;">{{ interaction.external_post_id }}</small>
+                </td>
+                <td>
+                    <div style="max-height: 100px; overflow-y: auto; font-size: 0.9rem;">
+                        {{ interaction.post_content }}
+                    </div>
+                    {% if interaction.url %}
+                    <a href="{{ interaction.url }}" target="_blank" style="font-size: 0.8rem;">View Original</a>
+                    {% endif %}
+                </td>
+                <td>
+                    <form action="/interactions/{{ interaction.id }}/like" method="post" style="display: inline;">
+                        <button type="submit" class="btn btn-sm" onclick="return confirm('Are you sure you want to like this post?');">
+                            👍 Like
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="4" style="text-align: center; padding: 2rem;">No interactions found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+
