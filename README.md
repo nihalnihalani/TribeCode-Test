@@ -129,6 +129,22 @@ The "Build in Public" movement creates a high-velocity stream of content. Develo
 
 ---
 
+## 📸 Interface
+
+<div align="center">
+
+| **Control Center** | **Campaign Scout** |
+|:---:|:---:|
+| ![Dashboard](assets/screenshots/dashboard.png) | ![Scout](assets/screenshots/scout.png) |
+
+| **Feed Archive** |
+|:---:|
+| ![Feed](assets/screenshots/feed.png) |
+
+</div>
+
+---
+
 ## 🔌 API Documentation
 
 The dashboard is powered by a robust REST API.
