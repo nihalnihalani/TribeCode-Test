@@ -1,55 +1,48 @@
-# <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=dL3M6FPblFer&format=png&size=48&color=ffffff"><img src="https://img.icons8.com/?id=dL3M6FPblFer&format=png&size=48" height="32"/></picture> VibeBot: Autonomous Build-in-Public Engagement Agent
+# VibeBot: Autonomous Build-in-Public Engagement Agent
 
 VibeBot is an autonomous agent designed to identify, analyze, and engage with "Vibe Coding" and "Build in Public" content across Reddit and LinkedIn. Unlike simple automation scripts, this system is built with a production-first mindset, featuring comprehensive unit testing, modular agentic architecture, and local archival persistence.
 
----
+## 🚩 Problem Statement
 
-## <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=2754&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=2754&format=png&size=24" height="24"/></picture> Problem Statement
+**The Context** The "Build in Public" movement has created a high-value stream of content across fragmented platforms. Developers are constantly shipping MVPs, but finding these genuine signals amidst the noise is difficult.
 
-**The Context**: The "Build in Public" movement has created a high-value stream of content across fragmented platforms. Developers are constantly shipping MVPs, but finding these genuine signals amidst the noise is difficult.
+### The Pain Points
 
-### <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=6yqvDYg5ZpoG&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=6yqvDYg5ZpoG&format=png&size=24" height="20"/></picture> The Pain Points
 - **High Noise-to-Signal Ratio**: Manually filtering for "vibe coding" posts is inefficient.
 - **Inconsistent Engagement**: Sustaining supportive interaction (liking/commenting) manually leads to burnout.
 - **Data Ephemerality**: Valuable interactions are lost to the feed with no central archive.
 
-### <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=zS3cCsyXeDM9&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=zS3cCsyXeDM9&format=png&size=24" height="20"/></picture> The Solution
+### The Solution
 An agentic system that **Detects** relevance, **Engages** intelligently using LLMs, and **Archives** interactions to a local SQLite database for future analysis.
 
----
-
-## <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=1IdNNmn0TzUw&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=1IdNNmn0TzUw&format=png&size=24" height="24"/></picture> System Architecture
+## 🏗 System Architecture
 
 The project follows a Multi-Agent approach (refer to docs/Agents+Skills.md for deep dive):
 
-1.  **<picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=O4Izwf32jaHl&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=O4Izwf32jaHl&format=png&size=24" height="20"/></picture> The Scout (Discovery Agent)**
-    -   **Role**: Scrapes and fetches posts from targeted subreddits and LinkedIn hashtags.
-    -   **Skills**: `fetch_reddit_feed`, `search_linkedin`, `heuristic_filter`.
-    -   **Unit Tests**: Mocks API responses to ensure rate limits are respected and filters work correctly.
+1. **The Scout (Discovery Agent)**
+   - **Role**: Scrapes and fetches posts from targeted subreddits and LinkedIn hashtags.
+   - **Skills**: `fetch_reddit_feed`, `search_linkedin`, `heuristic_filter`.
+   - **Unit Tests**: Mocks API responses to ensure rate limits are respected and filters work correctly.
 
-2.  **<picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=102698&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=102698&format=png&size=24" height="20"/></picture> The Vibe Check (Engagement Agent)**
-    -   **Role**: Analyzes post content and generates context-aware comments.
-    -   **Skills**: `analyze_sentiment`, `generate_response` (LLM), `safety_check`.
-    -   **Unit Tests**: Validates that generated comments are positive, non-spammy, and within character limits.
+2. **The Vibe Check (Engagement Agent)**
+   - **Role**: Analyzes post content and generates context-aware comments.
+   - **Skills**: `analyze_sentiment`, `generate_response` (LLM), `safety_check`.
+   - **Unit Tests**: Validates that generated comments are positive, non-spammy, and within character limits.
 
-3.  **<picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=443&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=443&format=png&size=24" height="20"/></picture> The Archivist (Persistence Agent)**
-    -   **Role**: Manages the local database state.
-    -   **Skills**: `check_deduplication`, `commit_transaction`, `export_logs`.
-    -   **Unit Tests**: Ensures idempotency (never commenting on the same post twice).
+3. **The Archivist (Persistence Agent)**
+   - **Role**: Manages the local database state.
+   - **Skills**: `check_deduplication`, `commit_transaction`, `export_logs`.
+   - **Unit Tests**: Ensures idempotency (never commenting on the same post twice).
 
----
+## 🛠 Tech Stack
 
-## <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=18506&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=18506&format=png&size=24" height="24"/></picture> Tech Stack
+- **Core**: Python 3.11+
+- **Orchestration**: LangChain / Pydantic AI (or your preferred framework)
+- **Database**: SQLite (local persistence)
+- **Testing**: pytest + unittest.mock
+- **APIs**: PRAW (Reddit), LinkedIn API, OpenAI/Anthropic (Generation)
 
--   **Core**: Python 3.11+
--   **Orchestration**: LangChain / Pydantic AI (or your preferred framework)
--   **Database**: SQLite (local persistence)
--   **Testing**: pytest + unittest.mock
--   **APIs**: PRAW (Reddit), LinkedIn API, OpenAI/Anthropic (Generation)
-
----
-
-## <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=56793&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=56793&format=png&size=24" height="24"/></picture> Testing Strategy (Priority #1)
+## 🧪 Testing Strategy (Priority #1)
 
 We enforce a strict TDD (Test Driven Development) approach. No feature is merged without accompanying tests.
 
@@ -64,13 +57,12 @@ pytest tests/test_agents.py
 ```
 
 ### Key Test Suites
--   `tests/test_discovery.py`: Mocks JSON responses to verify filtering logic.
--   `tests/test_safety.py`: adversarial testing against the LLM prompt to prevent toxic output.
--   `tests/test_db.py`: Verifies schema integrity and deduplication logic.
 
----
+- `tests/test_discovery.py`: Mocks JSON responses to verify filtering logic.
+- `tests/test_safety.py`: adversarial testing against the LLM prompt to prevent toxic output.
+- `tests/test_db.py`: Verifies schema integrity and deduplication logic.
 
-## <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=gxuEDgFteZdP&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=gxuEDgFteZdP&format=png&size=24" height="24"/></picture> Data Schema (Local DB)
+## 💾 Data Schema (Local DB)
 
 We use a lightweight interactions table to archive all activity.
 
@@ -86,41 +78,41 @@ CREATE TABLE interactions (
 );
 ```
 
----
+## 🚀 Getting Started
 
-## <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=zTcaj4KnPtWt&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=zTcaj4KnPtWt&format=png&size=24" height="24"/></picture> Getting Started
+### Clone the Repo
 
-1.  **Clone the Repo**
-    ```bash
-    git clone https://github.com/yourusername/vibebot.git
-    cd vibebot
-    ```
+```bash
+git clone https://github.com/yourusername/vibebot.git
+cd vibebot
+```
 
-2.  **Environment Variables**
-    Create a `.env` file based on `.env.example`:
-    ```ini
-    REDDIT_CLIENT_ID=...
-    REDDIT_CLIENT_SECRET=...
-    OPENAI_API_KEY=...
-    DATABASE_URL=sqlite:///vibebot.db
-    ```
+### Environment Variables
+Create a `.env` file based on `.env.example`:
 
-3.  **Install Dependencies**
-    ```bash
-    pip install -r requirements.txt
-    ```
+```ini
+REDDIT_CLIENT_ID=...
+REDDIT_CLIENT_SECRET=...
+OPENAI_API_KEY=...
+DATABASE_URL=sqlite:///vibebot.db
+```
 
-4.  **Run the Scout**
-    ```bash
-    python main.py --mode=scout
-    ```
+### Install Dependencies
 
----
+```bash
+pip install -r requirements.txt
+```
 
-## <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=876&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=876&format=png&size=24" height="24"/></picture> Ethics & Safety
+### Run the Scout
+
+```bash
+python main.py --mode=scout
+```
+
+## ⚠️ Ethics & Safety
 
 This bot is designed to be supportive, not spammy.
 
--   **Rate Limits**: The bot is hard-coded to sleep between actions to mimic human behavior.
--   **Disclosure**: The User-Agent string identifies this as a bot.
--   **Content Policy**: The `safety_check` skill explicitly rejects posts about politics, tragedy, or unrelated viral content.
+- **Rate Limits**: The bot is hard-coded to sleep between actions to mimic human behavior.
+- **Disclosure**: The User-Agent string identifies this as a bot.
+- **Content Policy**: The `safety_check` skill explicitly rejects posts about politics, tragedy, or unrelated viral content.
