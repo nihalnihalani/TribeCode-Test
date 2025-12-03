@@ -1,52 +1,58 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="header-bar">
-    <h1 class="page-title">Campaign Scout</h1>
-</div>
-
-<div class="card" style="max-width: 800px; margin: 0 auto;">
-    <div style="text-align: center; margin-bottom: 2rem;">
-        <div style="background: #eff6ff; width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
-             <img src="https://img.icons8.com/?id=10601&format=png&size=32" alt="Radar">
-        </div>
-        <h2>Launch New Scan</h2>
-        <p style="color: var(--text-muted);">
-            BuildRadar will simultaneously scan Reddit and X for the latest "Build in Public" discussions matching your criteria.
-        </p>
-    </div>
-
-    <form action="/scout" method="post">
-        <div class="form-group">
-            <label class="form-label">Search Query / Topic</label>
-            <input type="text" name="query" class="form-control" placeholder="e.g. build in public, saas marketing, ai wrapper" required value="build in public">
-            <small style="color: #94a3b8;">Use keywords relevant to your niche.</small>
-        </div>
-
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
-            <div class="form-group">
-                <label class="form-label">Limit (Posts)</label>
-                <input type="number" name="limit" class="form-control" value="20" min="1" max="100">
+<div style="max-width: 600px; margin: 0 auto; padding-top: 2rem;">
+    
+    <div class="card" style="border-top: 4px solid var(--primary-color);">
+        <div style="text-align: center; margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border-color);">
+            <div style="background: #e0e7ff; width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; color: var(--primary-color);">
+                 <img src="https://img.icons8.com/?id=10601&format=png&size=32" style="filter: sepia(100%) hue-rotate(190deg) saturate(500%);">
             </div>
-            
+            <h2 style="font-size: 1.5rem; margin-bottom: 0.5rem;">New Mission</h2>
+            <p style="color: var(--text-muted); font-size: 0.95rem; max-width: 400px; margin: 0 auto;">
+                Deploy scouts to find relevant conversations on Reddit and X.
+            </p>
+        </div>
+
+        <form action="/scout" method="post">
             <div class="form-group">
-                <label class="form-label">Platforms</label>
-                <div style="padding: 0.75rem; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
-                    <div style="margin-bottom: 0.5rem;">
-                        <input type="checkbox" checked disabled> <span style="margin-left: 0.5rem; font-weight: 500;">Reddit</span>
-                    </div>
-                    <div>
-                        <input type="checkbox" checked disabled> <span style="margin-left: 0.5rem; font-weight: 500;">Twitter / X</span>
-                    </div>
+                <label class="form-label">Target Topic / Keywords</label>
+                <div style="position: relative;">
+                    <input type="text" name="query" class="form-control" placeholder="e.g. build in public" required value="build in public" style="padding-left: 2.5rem; font-size: 1rem;">
+                    <img src="https://img.icons8.com/?id=132&format=png&size=16" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); opacity: 0.4;">
                 </div>
-                <input type="hidden" name="platform" value="all">
-                <small style="color: #ef4444; font-size: 0.75rem;">*Scanning both platforms is enforced.</small>
+                <small style="display: block; margin-top: 0.5rem; color: var(--text-light); font-size: 0.8rem;">
+                    Enter keywords relevant to your niche.
+                </small>
             </div>
-        </div>
 
-        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 1rem; font-size: 1.1rem;">
-            Start Radar Scan
-        </button>
-    </form>
+            <div class="grid-2">
+                <div class="form-group">
+                    <label class="form-label">Fetch Limit</label>
+                    <input type="number" name="limit" class="form-control" value="20" min="1" max="100">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Target Platforms</label>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <div style="flex: 1; background: #f8fafc; border: 1px solid var(--border-color); padding: 0.5rem; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; opacity: 0.8;">
+                            <img src="https://img.icons8.com/?id=118637&format=png&size=20" style="margin-right: 4px;"> Reddit
+                        </div>
+                        <div style="flex: 1; background: #f8fafc; border: 1px solid var(--border-color); padding: 0.5rem; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; opacity: 0.8;">
+                            <img src="https://img.icons8.com/?id=118638&format=png&size=20" style="margin-right: 4px;"> X
+                        </div>
+                    </div>
+                    <input type="hidden" name="platform" value="all">
+                </div>
+            </div>
+
+            <div style="margin-top: 2rem;">
+                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.875rem; font-size: 1rem; justify-content: center;">
+                    Start Scouting
+                    <img src="https://img.icons8.com/?id=60019&format=png&size=20" style="filter: invert(1); margin-left: 4px;">
+                </button>
+            </div>
+        </form>
+    </div>
 </div>
 {% endblock %}

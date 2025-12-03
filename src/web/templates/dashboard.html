@@ -1,78 +1,133 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="header-bar">
-    <h1 class="page-title">Dashboard</h1>
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <h1 class="page-title">Dashboard Overview</h1>
     <a href="/scout" class="btn btn-primary">
-        <img src="https://img.icons8.com/?id=WwWusvLMTFd7&format=png&size=24" style="width:16px; margin-right:8px; filter: invert(1);">
-        New Scan
+        <img src="https://img.icons8.com/?id=WwWusvLMTFd7&format=png&size=20" style="filter: invert(1);">
+        New Scout Mission
     </a>
 </div>
 
 <!-- Key Metrics -->
 <div class="stats-grid">
     <div class="stat-card">
-        <span class="stat-label">Total Archived</span>
-        <span class="stat-value">{{ stats.total }}</span>
+        <div style="display: flex; justify-content: space-between; align-items: start;">
+            <div>
+                <span class="stat-label">Total Interacted</span>
+                <span class="stat-value">{{ stats.total }}</span>
+            </div>
+            <div style="padding: 8px; background: #f1f5f9; border-radius: 8px;">
+                <img src="https://img.icons8.com/?id=123464&format=png&size=24" style="opacity: 0.5;">
+            </div>
+        </div>
     </div>
-    <div class="stat-card" style="border-bottom: 4px solid #ff4500;">
-        <span class="stat-label">Reddit Posts</span>
-        <span class="stat-value">{{ stats.reddit }}</span>
+    
+    <div class="stat-card">
+        <div style="display: flex; justify-content: space-between; align-items: start;">
+            <div>
+                <span class="stat-label">Reddit Posts</span>
+                <span class="stat-value">{{ stats.reddit }}</span>
+            </div>
+            <div style="padding: 8px; background: #ffedd5; border-radius: 8px;">
+                <img src="https://img.icons8.com/?id=118637&format=png&size=24" style="color: #ea580c;">
+            </div>
+        </div>
     </div>
-    <div class="stat-card" style="border-bottom: 4px solid #1da1f2;">
-        <span class="stat-label">Twitter/X Posts</span>
-        <span class="stat-value">{{ stats.twitter }}</span>
+    
+    <div class="stat-card">
+        <div style="display: flex; justify-content: space-between; align-items: start;">
+            <div>
+                <span class="stat-label">X (Twitter)</span>
+                <span class="stat-value">{{ stats.twitter }}</span>
+            </div>
+            <div style="padding: 8px; background: #e0f2fe; border-radius: 8px;">
+                <img src="https://img.icons8.com/?id=118638&format=png&size=24" style="color: #0284c7;">
+            </div>
+        </div>
     </div>
 </div>
 
 <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem;">
     <!-- Recent Activity Feed -->
     <div class="card">
-        <div class="header-bar" style="margin-bottom: 1rem;">
-            <h3 style="margin:0;">Recent Pulse</h3>
-            <a href="/interactions" style="color: var(--primary-color); text-decoration: none; font-weight: 600; font-size: 0.875rem;">View Feed &rarr;</a>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h3 style="margin:0; font-size: 1.1rem;">Recent Pulse</h3>
+            <a href="/interactions" style="color: var(--primary-color); text-decoration: none; font-weight: 600; font-size: 0.875rem; display: flex; align-items: center; gap: 4px;">
+                View All <img src="https://img.icons8.com/?id=86525&format=png&size=16" style="width: 12px; filter: invert(27%) sepia(51%) saturate(2878%) hue-rotate(246deg) brightness(96%) contrast(94%);">
+            </a>
         </div>
         
         <div class="feed-preview">
             {% for interaction in interactions %}
-            <div style="padding: 1rem 0; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center;">
-                <div style="width: 8px; height: 8px; border-radius: 50%; background: {{ '#ff4500' if interaction.platform == 'Reddit' else '#1da1f2' }}; margin-right: 1rem;"></div>
-                <div style="flex-grow: 1;">
-                    <div style="font-weight: 600; font-size: 0.9rem;">{{ interaction.post_content[:60] }}...</div>
-                    <div style="font-size: 0.75rem; color: #64748b;">{{ interaction.created_at.strftime('%b %d, %H:%M') }} • {{ interaction.platform }}</div>
+            <div style="padding: 1rem 0; border-bottom: 1px solid #f1f5f9; display: flex; align-items: start; gap: 1rem;">
+                <div style="width: 36px; height: 36px; border-radius: 8px; background: {{ '#ffedd5' if interaction.platform == 'Reddit' else '#e0f2fe' }}; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    {% if interaction.platform == 'Reddit' %}
+                        <img src="https://img.icons8.com/?id=118637&format=png&size=20">
+                    {% else %}
+                        <img src="https://img.icons8.com/?id=118638&format=png&size=20">
+                    {% endif %}
                 </div>
+                <div style="flex-grow: 1;">
+                    <div style="font-weight: 500; font-size: 0.95rem; margin-bottom: 0.25rem; line-height: 1.4;">
+                        {{ interaction.post_content[:80] }}...
+                    </div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">
+                        {{ interaction.created_at.strftime('%b %d, %H:%M') }} • {{ interaction.platform }}
+                    </div>
+                </div>
+                {% if interaction.status == 'POSTED' %}
+                <span style="background: #dcfce7; color: #166534; font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; font-weight: 600;">REPLIED</span>
+                {% endif %}
             </div>
             {% else %}
-            <p style="color: #94a3b8; text-align: center; padding: 2rem;">No recent activity. Launch a scan!</p>
+            <div style="text-align: center; padding: 3rem 1rem;">
+                <div style="width: 64px; height: 64px; background: #f1f5f9; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+                    <img src="https://img.icons8.com/?id=10601&format=png&size=32" style="opacity: 0.4;">
+                </div>
+                <p style="color: #94a3b8; margin-bottom: 1rem;">No signal detected yet.</p>
+                <a href="/scout" class="btn btn-sm btn-primary">Start Scanning</a>
+            </div>
             {% endfor %}
         </div>
     </div>
 
-    <!-- Chart (Placeholder for now) -->
+    <!-- Chart -->
     <div class="card">
-        <h3 style="margin-top:0;">Platform Distribution</h3>
-        <canvas id="platformChart"></canvas>
+        <h3 style="margin:0 0 1.5rem 0; font-size: 1.1rem;">Source Distribution</h3>
+        <div style="position: relative; height: 250px; display: flex; align-items: center; justify-content: center;">
+            <canvas id="platformChart"></canvas>
+        </div>
     </div>
 </div>
 
 <script>
-    // Initialize Chart
     const ctx = document.getElementById('platformChart').getContext('2d');
     new Chart(ctx, {
         type: 'doughnut',
         data: {
-            labels: ['Reddit', 'Twitter'],
+            labels: ['Reddit', 'Twitter/X'],
             datasets: [{
                 data: [{{ stats.reddit }}, {{ stats.twitter }}],
-                backgroundColor: ['#ff4500', '#1da1f2'],
-                borderWidth: 0
+                backgroundColor: ['#f97316', '#0ea5e9'],
+                borderWidth: 0,
+                hoverOffset: 4
             }]
         },
         options: {
             responsive: true,
+            maintainAspectRatio: false,
             plugins: {
-                legend: { position: 'bottom' }
-            }
+                legend: { 
+                    position: 'bottom',
+                    labels: {
+                        padding: 20,
+                        usePointStyle: true,
+                        font: { family: 'Inter', size: 12 }
+                    }
+                }
+            },
+            cutout: '75%'
         }
     });
 </script>
