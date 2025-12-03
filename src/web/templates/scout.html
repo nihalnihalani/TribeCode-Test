@@ -15,13 +15,26 @@
             <div style="background: rgba(59, 130, 246, 0.1); padding: 0.6rem; border-radius: 8px; margin-right: 1rem;">
                 <img src="https://img.icons8.com/?id=10601&format=png&size=24" alt="Radar" style="filter: invert(1);">
             </div>
-            <h3 style="margin:0; font-size: 1.1rem;">Manual Target</h3>
+            <h3 style="margin:0; font-size: 1.1rem;">Launch Scout Mission</h3>
         </div>
 
         <form action="/scout" method="post" onsubmit="showLoading(this)">
             <div class="form-group">
-                <label class="form-label">Target Keywords</label>
-                <input type="text" name="query" class="form-control" placeholder="e.g. 'AI Agents', 'SaaS'" required>
+                <label class="form-label">Target Keywords (Preset)</label>
+                <div style="background: var(--bg-input); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+                    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                        <span class="platform-badge twitter">build in public</span>
+                        <span class="platform-badge twitter">vibe coding</span>
+                        <span class="platform-badge twitter">indie hacker</span>
+                        <span class="platform-badge twitter">saas mvp</span>
+                        <span class="platform-badge twitter">startup</span>
+                        <span class="platform-badge twitter">side project</span>
+                    </div>
+                    <p class="text-muted text-sm" style="margin-top: 0.5rem; margin-bottom: 0;">
+                        The scout will automatically search Twitter for these high-signal topics.
+                    </p>
+                </div>
+                <input type="hidden" name="query" value="auto">
             </div>
             
             <div class="form-group">

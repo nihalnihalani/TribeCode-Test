@@ -228,24 +228,45 @@ class TwitterScout:
                 page.goto(url)
                 
                 # 1. Click Reply Box (often "Post your reply")
-                # Selector: div[data-testid="tweetTextarea_0"] is the input.
-                # Usually we can just type into the contenteditable.
+                # Twitter updated their selectors:
+                # The main reply area often has a placeholder "Post your reply"
+                # and is a contenteditable div.
                 
                 try:
-                    editor = page.wait_for_selector('div[data-testid="tweetTextarea_0"]', timeout=10000)
+                    # Try multiple selectors for robustness
+                    editor_selectors = [
+                        'div[data-testid="tweetTextarea_0"]',
+                        'div[aria-label="Post text"]',
+                        'div[contenteditable="true"]'
+                    ]
+                    
+                    editor = None
+                    for sel in editor_selectors:
+                        try:
+                            editor = page.wait_for_selector(sel, timeout=5000)
+                            if editor:
+                                break
+                        except:
+                            continue
+                            
                     if editor:
                         editor.click()
                         editor.fill(text)
                         
                         # Click Reply Button
-                        # button[data-testid="tweetButtonInline"]
                         submit_btn = page.wait_for_selector('button[data-testid="tweetButtonInline"]', timeout=5000)
                         if submit_btn:
-                            submit_btn.click()
-                            print(f"  Replied to {tweet_id}")
-                            time.sleep(2)
-                            browser.close()
-                            return True
+                            # Check if disabled
+                            if submit_btn.is_disabled():
+                                print("  Reply button disabled (maybe text too long or empty?)")
+                            else:
+                                submit_btn.click()
+                                print(f"  Replied to {tweet_id}")
+                                time.sleep(2)
+                                browser.close()
+                                return True
+                    else:
+                        print("  Could not find reply editor.")
                             
                 except Exception as e:
                     print(f"  Reply failed: {e}")

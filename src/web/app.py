@@ -117,13 +117,8 @@ def run_scout_task(platform: str, limit: int, query: str = "build in public"):
     
     if platform == "twitter" or platform == "all":
         # Handle Auto-Pilot or Multiple Keywords
-        search_queries = []
-        if query.strip().lower() == "auto":
-            # Auto-Pilot Keywords
-            search_queries = ["build in public", "indie hacker", "saas mvp", "side project"]
-        else:
-            # Handle comma-separated manual input (e.g., "ai, crypto")
-            search_queries = [k.strip() for k in query.split(",") if k.strip()]
+        # Always use preset list now as per new product requirement
+        search_queries = ["build in public", "vibe coding", "indie hacker", "saas mvp", "startup", "side project"]
         
         print(f"Running Twitter Scout for queries: {search_queries}")
         
@@ -152,7 +147,7 @@ def trigger_scout(
     background_tasks: BackgroundTasks,
     platform: str = Form(...),
     limit: int = Form(20),
-    query: str = Form("build in public")
+    query: str = Form("auto") # Default to auto
 ):
     background_tasks.add_task(run_scout_task, platform, limit, query)
     return RedirectResponse(url="/interactions", status_code=303)
