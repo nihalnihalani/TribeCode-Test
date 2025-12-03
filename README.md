@@ -7,7 +7,7 @@ VibeBot is an autonomous agent designed to identify, analyze, and engage with "B
 The "Build in Public" movement on X has created a high-velocity stream of content. Developers are shipping MVPs daily, but finding genuine signals amidst the noise is difficult. VibeBot solves this by:
 1.  **Scouting** X for high-signal keywords (e.g., "build in public", "vibe coding").
 2.  **Filtering** noise using heuristic and semantic analysis.
-3.  **Engaging** authentically using LLMs (Claude 3.5 Sonnet).
+3.  **Engaging** authentically using LLMs (**Claude 3.5 Haiku** for fast, conversational replies).
 4.  **Archiving** interactions for long-term analysis.
 
 ---
@@ -16,17 +16,17 @@ The "Build in Public" movement on X has created a high-velocity stream of conten
 
 ### 1. The Scout (Discovery Agent)
 <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=10601&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=10601&format=png&size=24" height="24"/></picture> **Radar & Search**
-- **Autonomous Browsing**: Uses Playwright to navigate X safely and effectively.
+- **Autonomous Browsing**: Uses Playwright with persistent contexts (shared cookies) to navigate X safely.
 - **Smart Queries**: targeted searches for keywords like `#buildinpublic`, `indie hacker`, and `saas mvp`.
-- **Rate Limiting**: Hard-coded sleeps and human-like browsing patterns to ensure account safety.
+- **Image Filtering**: Automatically skips posts with images to focus on text-based technical discussions.
 - **Deduplication**: Never processes the same tweet twice.
 
 ### 2. The Vibe Check (Intelligence Agent)
 <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=2070&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=2070&format=png&size=24" height="24"/></picture> **Analysis & Engagement**
 - **Context Awareness**: Analyzes the tweet's text, author, and metrics.
-- **LLM-Powered**: Uses Claude 3.5 Sonnet to generate genuine, non-spammy replies.
-- **Safety Rails**: Filters out political, tragic, or unrelated viral content.
-- **Personality**: Adopts a "casual developer" persona (lowercase usage, specific technical questions).
+- **LLM-Powered**: Uses **Claude 3.5 Haiku** to generate genuine, non-spammy replies.
+- **Persona**: Adopts a "casual developer" persona (lowercase usage, specific technical questions, no robotic "Great job!").
+- **Contextual Memory**: References your previous comments to maintain a consistent "vibe" and avoid repetition.
 
 ### 3. The Archivist (Persistence Layer)
 <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=11360&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=11360&format=png&size=24" height="24"/></picture> **Database & Memory**
@@ -37,19 +37,20 @@ The "Build in Public" movement on X has created a high-velocity stream of conten
 ### 4. Human-in-the-Loop Dashboard
 <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=aVHe2jHuORcA&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=aVHe2jHuORcA&format=png&size=24" height="24"/></picture> **Control Center**
 - **Web UI**: A clean, modern dashboard built with FastAPI and Jinja2.
-- **Feed View**: Review captured tweets in a card-based layout.
+- **Feed View**: Review captured tweets in a card-based layout, grouped by topic tag.
 - **Manual Overrides**: Manually trigger "Like" or "Reply" actions from the UI.
 - **Campaigns**: Launch specific scouting missions with custom keywords.
+- **Settings**: Manage Twitter login sessions directly from the browser.
 
 ---
 
 ## <picture><source media="(prefers-color-scheme: dark)" srcset="https://img.icons8.com/?id=11240&format=png&size=24&color=ffffff"><img src="https://img.icons8.com/?id=11240&format=png&size=24" height="24"/></picture> Tech Stack
 
 - **Core**: Python 3.11+
-- **Browser Automation**: Playwright (for X interaction)
+- **Browser Automation**: Playwright (for X interaction, optimized for persistent sessions)
 - **Web Framework**: FastAPI + Jinja2 (Dashboard)
 - **Database**: SQLite + SQLAlchemy
-- **AI/LLM**: Anthropic Claude 3.5 Sonnet
+- **AI/LLM**: Anthropic Claude 3.5 Haiku
 - **Testing**: pytest
 
 ---
@@ -74,24 +75,24 @@ Create a `.env` file with your API keys:
 ```ini
 ANTHROPIC_API_KEY=sk-ant-...
 DATABASE_URL=sqlite:///vibebot.db
-# Optional: Twitter credentials if we move to API later, 
-# currently uses browser profile in 'twitter_auth_data'
+# Twitter Login (Optional - only needed if auto-login fails)
+TWITTER_USERNAME=...
+TWITTER_PASSWORD=...
 ```
 
 ### 4. Authentication (Browser Profile)
 VibeBot uses a persistent browser profile to avoid constant logins.
-Run the login helper to set up your session:
-
-```bash
-python -c "from src.utils.browser_setup import setup_twitter_login; setup_twitter_login()"
-```
-*This will open a browser window. Log in to X manually, then close the browser. Your session cookies will be saved.*
+1. Start the app: `uvicorn src.web.app:app --reload`
+2. Go to `http://127.0.0.1:8000/settings`
+3. Click **"Launch Twitter Login Browser"**
+4. Log in to X manually in the window that opens.
+5. Close the window. Your session is now cached globally.
 
 ### 5. Run the Agent
 Start the web dashboard and the auto-scout background process:
 
 ```bash
-python main.py
+uvicorn src.web.app:app --reload
 ```
 Visit `http://localhost:8000` to see the dashboard.
 
