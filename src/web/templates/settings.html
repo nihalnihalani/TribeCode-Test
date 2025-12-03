@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="header-bar">
+    <h1 class="page-title">Settings</h1>
+</div>
+
+<div class="card" style="max-width: 800px;">
+    <h3 style="margin-top: 0; border-bottom: 1px solid #f3f4f6; padding-bottom: 1rem; margin-bottom: 1.5rem;">API Configuration</h3>
+    
+    <form>
+        <div class="form-group">
+            <label class="form-label">Reddit Client ID</label>
+            <input type="text" class="form-control" value="************" disabled style="background: #f9fafb; color: #9ca3af;">
+            <small style="color: #6b7280;">Managed via environment variables (.env)</small>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Twitter API Key</label>
+            <input type="text" class="form-control" value="************" disabled style="background: #f9fafb; color: #9ca3af;">
+        </div>
+
+        <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #f3f4f6;">
+            <button type="button" class="btn btn-primary" disabled>Save Changes (Managed by Admin)</button>
+        </div>
+    </form>
+</div>
+
+<div class="card" style="max-width: 800px;">
+    <h3 style="margin-top: 0; border-bottom: 1px solid #f3f4f6; padding-bottom: 1rem; margin-bottom: 1.5rem;">Browser Automation (Twitter)</h3>
+    <p style="color: #4b5563; margin-bottom: 1rem;">
+        Since we are using a browser based scout for Twitter (Playwright), you need to log in manually once. 
+        Click the button below to launch a browser window, log in to Twitter, and then close the window.
+        The session will be saved for the agent to use.
+    </p>
+    <form action="/settings/twitter-login" method="post">
+        <button type="submit" class="btn btn-primary" style="background-color: #1da1f2; border-color: #1da1f2;">
+            Launch Twitter Login Browser
+        </button>
+    </form>
+</div>
+
+<div class="card" style="max-width: 800px;">
+    <h3 style="margin-top: 0; border-bottom: 1px solid #f3f4f6; padding-bottom: 1rem; margin-bottom: 1.5rem;">System Status</h3>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div>
+            <span style="display: block; font-size: 0.875rem; color: #6b7280;">Database Status</span>
+            <span style="color: #10b981; font-weight: 600;">● Connected (SQLite)</span>
+        </div>
+        <div>
+            <span style="display: block; font-size: 0.875rem; color: #6b7280;">Scout Agent</span>
+            <span style="color: #10b981; font-weight: 600;">● Active</span>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

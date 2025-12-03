@@ -1,9 +1,9 @@
-# VibeBot MVP Plan (Web App Version)
+# BuildRadar: Product-Grade Plan
 
 ## 1. Project Initialization & Setup
 - [x] Create/Verify `nihal-branch` and switch to it.
 - [x] Create project directory structure (`src/agents`, `src/utils`, `tests`).
-- [ ] Update `requirements.txt` with web dependencies (`fastapi`, `uvicorn`, `jinja2`, `python-multipart`).
+- [x] Update `requirements.txt` with web dependencies (`fastapi`, `uvicorn`, `jinja2`, `python-multipart`).
 - [x] Create `.env.example` template.
 
 ## 2. Database & Persistence (The Archivist)
@@ -23,18 +23,27 @@
 - [x] **Constraint Note**: Since X Free Tier is Write-Only, we will implement the structure and Authentication check.
 - [x] Add placeholder/stub functions for `fetch_posts` and `like_post` that log a "Upgrade Tier" warning, or explore limited scraping if requested (but API is preferred for stability).
 
-## 5. Main Orchestration (Web App)
-- [ ] Install `fastapi`, `uvicorn`, `jinja2` (for simple templates).
-- [ ] Implement `src/web/app.py`:
-    - `GET /`: Dashboard showing archived posts stats.
-    - `GET /scout`: Button/Form to trigger scouting (Reddit/X).
-    - `POST /scout`: API endpoint that calls `reddit_scout` or `twitter_scout` background tasks.
-    - `GET /interactions`: Table view of archived posts.
-    - `POST /interactions/{id}/like`: Action to trigger "Like".
-- [ ] Create templates in `src/web/templates/` (Dashboard, List View).
+## 5. Main Orchestration (Web App - Product Grade)
+- [x] **UI/UX Overhaul**:
+    - [x] Rename app to **BuildRadar**.
+    - [x] Implement a modern sidebar layout with "Blue" theme.
+    - [x] Use `icons8` MCP to fetch genuine icons for Sidebar (Dashboard, Scout, Archive, Settings).
+    - [x] Redesign `dashboard.html` with charts (Chart.js) and key metrics cards.
+    - [x] Redesign `scout.html` to be a "Campaign Launcher" rather than a simple form.
+    - [x] Redesign `interactions.html` as a "Feed" with card layout (like Twitter/Reddit style) rather than a table.
+- [x] **Functionality Updates**:
+    - [x] Update `scout` endpoint to ALWAYS fetch from **BOTH** Reddit and X (parallel execution).
+    - [x] Remove the hardcoded "5 limit" default; set default to 20-50 and allow user input up to 100.
+    - [x] Enhance `twitter_scout.py` to accept dynamic queries (not just #buildinpublic).
+    - [x] Add "Search Query" input field to the Scout UI so users can customize what they are looking for (e.g. "marketing", "AI wrapper").
+- [x] **Assets**:
+    - [x] Create `src/web/static/css/style.css` for custom product styling.
+    - [x] Create `src/web/static/js/main.js` for dynamic interactions (like "Load More").
 
 ## 6. Testing
-- [ ] Create `tests/test_db.py` to verify storage.
-- [ ] Create `tests/test_reddit.py` with mocks.
-- [ ] Create `tests/test_web.py` to test API endpoints.
+- [x] Update `tests/test_web.py` to reflect new UI structure.
+- [x] Verify parallel execution of Reddit/X scouting.
 
+## 7. Product Polish (Post-MVP)
+- [ ] **Settings Page**: Implement `/settings` to view/edit configuration (API Keys logic placeholders).
+- [ ] **Deployment**: Create `Dockerfile` for containerization.

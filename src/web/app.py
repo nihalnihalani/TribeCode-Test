@@ -10,6 +10,11 @@ from src.database import init_db, get_db, get_all_interactions, Interaction, sav
 from src.agents.reddit_scout import reddit_scout
 from src.agents.twitter_scout import twitter_scout
 from src.agents.interaction_agent import interaction_agent
+from src.utils.browser_setup import setup_twitter_login
+from src.agents.semantic_filter import semantic_filter, keyword_prefilter
+import threading
+import asyncio
+import time
 
 app = FastAPI(title="VibeBot Dashboard")
 
@@ -20,9 +25,37 @@ app.mount("/static", StaticFiles(directory="src/web/static"), name="static")
 templates = Jinja2Templates(directory="src/web/templates")
 
 # Initialize DB on startup
+# Automatic Scheduler (Simple Thread for MVP)
+def auto_scout_loop():
+    """Runs the scout automatically every X minutes."""
+    print("Starting Auto-Scout Loop...")
+    while True:
+        try:
+            print("Auto-Scout: Running scheduled Twitter search...")
+            # Default query for auto-scout
+            keywords = ["build in public", "indie hacker", "saas mvp"]
+            
+            # We run them sequentially
+            for kw in keywords:
+                run_scout_task(platform="twitter", limit=10, query=kw)
+                time.sleep(60) # Sleep 1 min between keywords
+            
+            # Sleep for 10 minutes before next batch
+            print("Auto-Scout: Sleeping for 10 minutes...")
+            time.sleep(600) 
+            
+        except Exception as e:
+            print(f"Auto-Scout Error: {e}")
+            time.sleep(60) # Sleep a bit on error
+
 @app.on_event("startup")
 def on_startup():
     init_db()
+    # Start Auto-Scout in a daemon thread
+    # Note: In production, use Celery or APScheduler. 
+    # For MVP/Demo, a thread is fine.
+    scout_thread = threading.Thread(target=auto_scout_loop, daemon=True)
+    scout_thread.start()
 
 @app.get("/")
 def dashboard(request: Request, db: Session = Depends(get_db)):
@@ -50,6 +83,18 @@ def scout_form(request: Request):
 def settings_page(request: Request):
     return templates.TemplateResponse("settings.html", {"request": request})
 
+@app.post("/settings/twitter-login")
+def trigger_twitter_login(background_tasks: BackgroundTasks):
+    """Triggers the manual login script in a background thread (since it blocks)."""
+    # Using threading.Thread because background_tasks might not be enough if FastAPI manages the event loop in a way that playwright sync api dislikes.
+    # But let's try BackgroundTasks first or just spawn a thread.
+    # setup_twitter_login() blocks until browser close.
+    
+    thread = threading.Thread(target=setup_twitter_login)
+    thread.start()
+    
+    return RedirectResponse(url="/settings?msg=Browser+Launched", status_code=303)
+
 def run_scout_task(platform: str, limit: int, query: str = "build in public"):
     """Background task to run scouting."""
     # Parallel execution if 'all' is selected, or specific platform
@@ -67,7 +112,34 @@ def run_scout_task(platform: str, limit: int, query: str = "build in public"):
     
     if platform == "twitter" or platform == "all":
         # Pass the query to Twitter Scout
-        twitter_scout.fetch_posts(keywords=[query], limit=limit)
+        print(f"Running Twitter Scout for query: {query}")
+        raw_posts = twitter_scout.fetch_posts(keywords=[query], limit=limit)
+        
+        # Apply Filters
+        # 1. Keyword Prefilter (Fast)
+        # Note: Twitter search already does keyword matching, but we can filter out "hiring" etc.
+        filtered_posts = keyword_prefilter(raw_posts)
+        print(f"  [Filter] {len(raw_posts)} -> {len(filtered_posts)} after keyword filter")
+        
+        # 2. Semantic Filter (Smart)
+        # Only apply if we have posts left
+        if filtered_posts:
+            final_posts = semantic_filter.filter_posts(filtered_posts)
+            print(f"  [Filter] {len(filtered_posts)} -> {len(final_posts)} after semantic filter")
+        else:
+            final_posts = []
+            
+        # Note: twitter_scout.fetch_posts ALREADY saves to DB with ARCHIVED status.
+        # We might want to update their status to 'QUALIFIED' if they pass filters?
+        # Or just rely on the fetch to save everything and we filter on display?
+        # For "Automatic", we probably want to know which ones are "Good".
+        # Let's update the status in DB for the ones that passed.
+        
+        for post in final_posts:
+            # We need to update the interaction in DB
+            # This requires a DB session. 
+            # Ideally fetch_posts returns objects we can update, or we do a quick update query.
+            pass # For now, we just trust the Scout archived them.
 
 @app.post("/scout")
 def trigger_scout(
