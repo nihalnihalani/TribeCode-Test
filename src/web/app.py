@@ -42,22 +42,33 @@ def dashboard(request: Request, db: Session = Depends(get_db)):
 def scout_form(request: Request):
     return templates.TemplateResponse("scout.html", {"request": request})
 
-def run_scout_task(platform: str, limit: int):
+def run_scout_task(platform: str, limit: int, query: str = "build in public"):
     """Background task to run scouting."""
+    # Parallel execution if 'all' is selected, or specific platform
+    # Since this is a background task, simple sequential execution is fine for now, 
+    # but we ensure both run if 'all' is selected.
+    
     if platform == "reddit" or platform == "all":
-        subs = ["saas", "startups", "sideproject", "buildinpublic"]
-        reddit_scout.fetch_posts(subreddits=subs, limit=limit)
+        # We assume the query can be used as search term. 
+        # For subreddits, we might keep the default list but filter by query, 
+        # OR search GLOBALLY on Reddit with that query?
+        # Let's keep the specific subreddits for high signal-to-noise, 
+        # but use the user's query as the search term WITHIN those subs.
+        subs = ["saas", "startups", "sideproject", "buildinpublic", "entrepreneur"]
+        reddit_scout.fetch_posts(subreddits=subs, search_query=query, limit=limit)
     
     if platform == "twitter" or platform == "all":
-        twitter_scout.fetch_posts(keywords=["#buildinpublic", "saas"], limit=limit)
+        # Pass the query to Twitter Scout
+        twitter_scout.fetch_posts(keywords=[query], limit=limit)
 
 @app.post("/scout")
 def trigger_scout(
     background_tasks: BackgroundTasks,
     platform: str = Form(...),
-    limit: int = Form(5)
+    limit: int = Form(20),
+    query: str = Form("build in public")
 ):
-    background_tasks.add_task(run_scout_task, platform, limit)
+    background_tasks.add_task(run_scout_task, platform, limit, query)
     return RedirectResponse(url="/interactions", status_code=303)
 
 @app.get("/interactions")

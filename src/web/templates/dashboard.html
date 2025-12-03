@@ -1,56 +1,79 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>Dashboard</h1>
+<div class="header-bar">
+    <h1 class="page-title">Dashboard</h1>
+    <a href="/scout" class="btn btn-primary">
+        <img src="https://img.icons8.com/?id=WwWusvLMTFd7&format=png&size=24" style="width:16px; margin-right:8px; filter: invert(1);">
+        New Scan
+    </a>
+</div>
 
-<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem;">
-    <div class="card">
-        <h3>Total Interactions</h3>
-        <p style="font-size: 2rem; font-weight: bold;">{{ stats.total }}</p>
+<!-- Key Metrics -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <span class="stat-label">Total Archived</span>
+        <span class="stat-value">{{ stats.total }}</span>
     </div>
-    <div class="card">
-        <h3>Reddit Posts</h3>
-        <p style="font-size: 2rem; font-weight: bold; color: #ff4500;">{{ stats.reddit }}</p>
+    <div class="stat-card" style="border-bottom: 4px solid #ff4500;">
+        <span class="stat-label">Reddit Posts</span>
+        <span class="stat-value">{{ stats.reddit }}</span>
     </div>
-    <div class="card">
-        <h3>Twitter Posts</h3>
-        <p style="font-size: 2rem; font-weight: bold; color: #1da1f2;">{{ stats.twitter }}</p>
+    <div class="stat-card" style="border-bottom: 4px solid #1da1f2;">
+        <span class="stat-label">Twitter/X Posts</span>
+        <span class="stat-value">{{ stats.twitter }}</span>
     </div>
 </div>
 
-<div class="card">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-        <h2>Recent Activity</h2>
-        <a href="/interactions" class="btn btn-sm">View All</a>
-    </div>
-    <table>
-        <thead>
-            <tr>
-                <th>Platform</th>
-                <th>Content Snippet</th>
-                <th>Date</th>
-                <th>Status</th>
-            </tr>
-        </thead>
-        <tbody>
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem;">
+    <!-- Recent Activity Feed -->
+    <div class="card">
+        <div class="header-bar" style="margin-bottom: 1rem;">
+            <h3 style="margin:0;">Recent Pulse</h3>
+            <a href="/interactions" style="color: var(--primary-color); text-decoration: none; font-weight: 600; font-size: 0.875rem;">View Feed &rarr;</a>
+        </div>
+        
+        <div class="feed-preview">
             {% for interaction in interactions %}
-            <tr>
-                <td>
-                    <span class="platform-badge {{ interaction.platform.lower() }}">
-                        {{ interaction.platform }}
-                    </span>
-                </td>
-                <td>{{ interaction.post_content[:80] }}...</td>
-                <td>{{ interaction.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
-                <td>{{ interaction.status }}</td>
-            </tr>
+            <div style="padding: 1rem 0; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center;">
+                <div style="width: 8px; height: 8px; border-radius: 50%; background: {{ '#ff4500' if interaction.platform == 'Reddit' else '#1da1f2' }}; margin-right: 1rem;"></div>
+                <div style="flex-grow: 1;">
+                    <div style="font-weight: 600; font-size: 0.9rem;">{{ interaction.post_content[:60] }}...</div>
+                    <div style="font-size: 0.75rem; color: #64748b;">{{ interaction.created_at.strftime('%b %d, %H:%M') }} • {{ interaction.platform }}</div>
+                </div>
+            </div>
             {% else %}
-            <tr>
-                <td colspan="4">No interactions yet. Start scouting!</td>
-            </tr>
+            <p style="color: #94a3b8; text-align: center; padding: 2rem;">No recent activity. Launch a scan!</p>
             {% endfor %}
-        </tbody>
-    </table>
-</div>
-{% endblock %}
+        </div>
+    </div>
 
+    <!-- Chart (Placeholder for now) -->
+    <div class="card">
+        <h3 style="margin-top:0;">Platform Distribution</h3>
+        <canvas id="platformChart"></canvas>
+    </div>
+</div>
+
+<script>
+    // Initialize Chart
+    const ctx = document.getElementById('platformChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Reddit', 'Twitter'],
+            datasets: [{
+                data: [{{ stats.reddit }}, {{ stats.twitter }}],
+                backgroundColor: ['#ff4500', '#1da1f2'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'bottom' }
+            }
+        }
+    });
+</script>
+{% endblock %}

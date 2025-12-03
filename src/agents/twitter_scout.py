@@ -52,6 +52,7 @@ class TwitterScout:
 
         # Logic for Basic Tier (if enabled later)
         found_tweets = []
+        # Combine keywords with OR for broader search
         query = " OR ".join(keywords) + " -is:retweet"
         
         try:
@@ -71,6 +72,7 @@ class TwitterScout:
                             status="ARCHIVED"
                         )
                         found_tweets.append({"id": tweet.id, "text": tweet.text})
+                        print(f"Archived Tweet: {tweet.text[:30]}...")
                         
             return found_tweets
             
@@ -99,4 +101,3 @@ class TwitterScout:
             return False
 
 twitter_scout = TwitterScout()
-

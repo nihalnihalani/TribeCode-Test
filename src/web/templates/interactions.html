@@ -1,55 +1,58 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-    <h1>Archived Interactions</h1>
-    <a href="/scout" class="btn">Scout New</a>
+<div class="header-bar">
+    <h1 class="page-title">Feed Archive</h1>
+    <a href="/scout" class="btn btn-primary btn-sm">Scout New</a>
 </div>
 
-<div class="card">
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Platform</th>
-                <th>Content</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for interaction in interactions %}
-            <tr>
-                <td>{{ interaction.id }}</td>
-                <td>
-                    <span class="platform-badge {{ interaction.platform.lower() }}">
-                        {{ interaction.platform }}
-                    </span>
-                    <br>
-                    <small style="color: #777;">{{ interaction.external_post_id }}</small>
-                </td>
-                <td>
-                    <div style="max-height: 100px; overflow-y: auto; font-size: 0.9rem;">
-                        {{ interaction.post_content }}
+<div class="feed-grid">
+    {% for interaction in interactions %}
+    <article class="post-card">
+        <div class="post-header">
+            <div style="display: flex; align-items: center;">
+                <!-- Avatar Placeholder -->
+                <div style="width: 40px; height: 40px; border-radius: 50%; background: #e2e8f0; display: flex; align-items: center; justify-content: center; margin-right: 1rem; font-weight: bold; color: #64748b;">
+                    {{ interaction.platform[0] }}
+                </div>
+                <div>
+                    <div style="font-weight: 700; color: #0f172a;">Unknown User</div>
+                    <div class="post-meta">
+                        {{ interaction.created_at.strftime('%b %d, %Y • %H:%M') }}
                     </div>
-                    {% if interaction.url %}
-                    <a href="{{ interaction.url }}" target="_blank" style="font-size: 0.8rem;">View Original</a>
-                    {% endif %}
-                </td>
-                <td>
-                    <form action="/interactions/{{ interaction.id }}/like" method="post" style="display: inline;">
-                        <button type="submit" class="btn btn-sm" onclick="return confirm('Are you sure you want to like this post?');">
-                            👍 Like
-                        </button>
-                    </form>
-                </td>
-            </tr>
-            {% else %}
-            <tr>
-                <td colspan="4" style="text-align: center; padding: 2rem;">No interactions found.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+                </div>
+            </div>
+            <span class="platform-badge {{ interaction.platform.lower() }}">
+                {{ interaction.platform }}
+            </span>
+        </div>
+
+        <div class="post-content">
+            {{ interaction.post_content }}
+        </div>
+
+        <div class="post-actions">
+            {% if interaction.url %}
+            <a href="{{ interaction.url }}" target="_blank" class="btn" style="color: var(--text-muted); margin-right: 0.5rem;">
+                <img src="https://img.icons8.com/?id=85826&format=png&size=16" style="margin-right: 5px;"> Open
+            </a>
+            {% endif %}
+            
+            <form action="/interactions/{{ interaction.id }}/like" method="post" class="like-form">
+                <button type="submit" class="btn btn-primary btn-sm">
+                    <img src="https://img.icons8.com/?id=87&format=png&size=16" style="filter: invert(1); margin-right: 6px;">
+                    Like Post
+                </button>
+            </form>
+        </div>
+    </article>
+    {% else %}
+    <div class="card" style="text-align: center; padding: 3rem;">
+        <img src="https://img.icons8.com/?id=10601&format=png&size=48" style="opacity: 0.5; margin-bottom: 1rem;">
+        <h3>No Signal Found</h3>
+        <p style="color: var(--text-muted);">Your archive is empty. Go to the Scout page to find new content.</p>
+        <a href="/scout" class="btn btn-primary" style="margin-top: 1rem;">Launch Scout</a>
+    </div>
+    {% endfor %}
 </div>
 {% endblock %}
-

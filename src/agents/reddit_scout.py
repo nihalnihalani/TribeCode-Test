@@ -8,23 +8,27 @@ load_dotenv()
 
 class RedditScout:
     def __init__(self):
-        self.reddit = praw.Reddit(
-            client_id=os.getenv("REDDIT_CLIENT_ID"),
-            client_secret=os.getenv("REDDIT_CLIENT_SECRET"),
-            user_agent=os.getenv("REDDIT_USER_AGENT"),
-            username=os.getenv("REDDIT_USERNAME"),
-            password=os.getenv("REDDIT_PASSWORD")
-        )
-        self.validate_auth()
+        self.reddit = None
+        try:
+            if os.getenv("REDDIT_CLIENT_ID"):
+                self.reddit = praw.Reddit(
+                    client_id=os.getenv("REDDIT_CLIENT_ID"),
+                    client_secret=os.getenv("REDDIT_CLIENT_SECRET"),
+                    user_agent=os.getenv("REDDIT_USER_AGENT"),
+                    username=os.getenv("REDDIT_USERNAME"),
+                    password=os.getenv("REDDIT_PASSWORD")
+                )
+                self.validate_auth()
+            else:
+                print("Reddit credentials not found in env. Scout initialized in inactive mode.")
+        except Exception as e:
+            print(f"Reddit Init Error: {e}")
 
     def validate_auth(self):
         """Checks if credentials are valid by accessing the user."""
         try:
-            # Only check if credentials are provided to avoid error on init during testing if env not set
-            if os.getenv("REDDIT_CLIENT_ID"):
+            if self.reddit:
                 print(f"Authenticated as: {self.reddit.user.me()}")
-            else:
-                print("Reddit credentials not found in env. Running in limited/mock mode.")
         except Exception as e:
             print(f"Reddit Auth Error: {e}")
 
@@ -33,6 +37,10 @@ class RedditScout:
         Searches for posts in the given subreddits matching the query.
         Archives them to the DB immediately.
         """
+        if not self.reddit:
+            print("Reddit Scout is not authenticated. Please set REDDIT_CLIENT_ID in .env")
+            return []
+
         found_posts = []
         
         # Combine subreddits into a single string like "SaaS+startups"
@@ -80,6 +88,10 @@ class RedditScout:
         """
         Upvotes a post by ID.
         """
+        if not self.reddit:
+            print("Reddit Scout is not authenticated.")
+            return False
+
         try:
             submission = self.reddit.submission(id=external_post_id)
             submission.upvote()
