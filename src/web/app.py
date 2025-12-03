@@ -5,6 +5,10 @@ from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 from typing import Optional
 import os
+import threading
+import asyncio
+import time
+import concurrent.futures
 
 from src.database import init_db, get_db, get_all_interactions, Interaction, save_interaction
 from src.agents.reddit_scout import reddit_scout
@@ -12,9 +16,6 @@ from src.agents.twitter_scout import twitter_scout
 from src.agents.interaction_agent import interaction_agent
 from src.utils.browser_setup import setup_twitter_login
 from src.agents.semantic_filter import semantic_filter, keyword_prefilter
-import threading
-import asyncio
-import time
 
 app = FastAPI(title="VibeBot Dashboard")
 
@@ -35,7 +36,8 @@ def auto_scout_loop():
             # Default query for auto-scout
             keywords = ["build in public", "indie hacker", "saas mvp"]
             
-            # We run them sequentially
+            # We run them sequentially in the background thread, 
+            # but triggering run_scout_task will use the parallel executor internally if applicable.
             for kw in keywords:
                 run_scout_task(platform="twitter", limit=10, query=kw)
                 time.sleep(60) # Sleep 1 min between keywords
@@ -91,70 +93,105 @@ def settings_page(request: Request):
 @app.post("/settings/twitter-login")
 def trigger_twitter_login(background_tasks: BackgroundTasks):
     """Triggers the manual login script in a background thread (since it blocks)."""
-    # Using threading.Thread because background_tasks might not be enough if FastAPI manages the event loop in a way that playwright sync api dislikes.
-    # But let's try BackgroundTasks first or just spawn a thread.
-    # setup_twitter_login() blocks until browser close.
-    
     thread = threading.Thread(target=setup_twitter_login)
     thread.start()
     
     return RedirectResponse(url="/settings?msg=Browser+Launched", status_code=303)
 
-def run_scout_task(platform: str, limit: int, query: str = "build in public"):
-    """Background task to run scouting."""
-    # Parallel execution if 'all' is selected, or specific platform
-    # Since this is a background task, simple sequential execution is fine for now, 
-    # but we ensure both run if 'all' is selected.
-    
-    if platform == "reddit" or platform == "all":
-        # We assume the query can be used as search term. 
-        # For subreddits, we might keep the default list but filter by query, 
-        # OR search GLOBALLY on Reddit with that query?
-        # Let's keep the specific subreddits for high signal-to-noise, 
-        # but use the user's query as the search term WITHIN those subs.
+def run_reddit_task(query: str, limit: int):
+    """Worker function for Reddit scouting."""
+    try:
+        print(f"Starting Reddit Scout for query: {query}")
         subs = ["saas", "startups", "sideproject", "buildinpublic", "entrepreneur"]
+        # Use query as search term in subreddits
         reddit_scout.fetch_posts(subreddits=subs, search_query=query, limit=limit)
-    
-    if platform == "twitter" or platform == "all":
-        # Handle Auto-Pilot or Multiple Keywords
-        # Always use preset list now as per new product requirement
-        search_queries = ["build in public", "vibe coding", "indie hacker", "saas mvp", "startup", "side project"]
+        print("Reddit Scout Finished")
+    except Exception as e:
+        print(f"Reddit Scout Error: {e}")
+
+def run_twitter_task(query: str, limit: int):
+    """Worker function for Twitter scouting."""
+    try:
+        search_queries = []
+        if query.strip().lower() == "auto":
+            search_queries = ["build in public", "vibe coding", "indie hacker", "saas mvp", "startup", "side project"]
+        else:
+            search_queries = [k.strip() for k in query.split(",") if k.strip()]
         
         print(f"Running Twitter Scout for queries: {search_queries}")
         
+        total_found = 0
         for q in search_queries:
             print(f"  [Twitter Scout] Searching for: {q}")
             raw_posts = twitter_scout.fetch_posts(keywords=[q], limit=limit)
+            total_found += len(raw_posts)
             
             # Apply Filters
-            # 1. Keyword Prefilter (Fast)
             filtered_posts = keyword_prefilter(raw_posts)
-            print(f"  [Filter] {len(raw_posts)} -> {len(filtered_posts)} after keyword filter")
-            
-            # 2. Semantic Filter (Smart)
             if filtered_posts:
                 final_posts = semantic_filter.filter_posts(filtered_posts)
-                print(f"  [Filter] {len(filtered_posts)} -> {len(final_posts)} after semantic filter")
+                print(f"  [Filter] {len(raw_posts)} -> {len(filtered_posts)} -> {len(final_posts)} items")
             else:
-                final_posts = []
+                print(f"  [Filter] {len(raw_posts)} -> 0 items")
                 
-            # Small delay between queries to be polite
+            # Small delay between queries
             if len(search_queries) > 1:
                 time.sleep(5)
+
+        # If no posts found on Twitter, log a System Alert
+        if total_found == 0:
+            print("No posts found on Twitter. Creating System Alert.")
+            try:
+                save_interaction(
+                    platform="System",
+                    external_post_id=f"sys_alert_{int(time.time())}",
+                    post_content="**Scout Mission Failed**: No posts were found on Twitter/X. \n\nPossible causes:\n1. Not logged in (Twitter requires login to search).\n2. Rate limiting active.\n3. No matches for keywords.\n\nPlease check the terminal for details or use Settings > Login.",
+                    status="ERROR",
+                    author_name="System Alert",
+                    author_handle="@vibebot",
+                    metrics={"error": 1}
+                )
+            except Exception as e:
+                print(f"Failed to save system alert: {e}")
+                
+        print("Twitter Scout Finished")
+    except Exception as e:
+        print(f"Twitter Scout Error: {e}")
+
+def run_scout_task(platform: str, limit: int, query: str = "build in public"):
+    """Background task to run scouting in parallel."""
+    
+    # Use ThreadPoolExecutor to run tasks concurrently
+    # Reddit uses PRAW (blocking I/O), Twitter uses Tweepy/Playwright (blocking/sync I/O here)
+    # Threads are suitable for I/O bound tasks like this.
+    
+    print(f"Launching Scout Mission: Platform={platform}, Query={query}, Limit={limit}")
+    
+    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+        futures = []
+        
+        if platform == "reddit" or platform == "all":
+            futures.append(executor.submit(run_reddit_task, query, limit))
+        
+        if platform == "twitter" or platform == "all":
+            futures.append(executor.submit(run_twitter_task, query, limit))
+        
+        # Wait for all tasks to complete
+        concurrent.futures.wait(futures)
+        print("Scout Mission Completed")
 
 @app.post("/scout")
 def trigger_scout(
     background_tasks: BackgroundTasks,
     platform: str = Form(...),
     limit: int = Form(20),
-    query: str = Form("auto") # Default to auto
+    query: str = Form("auto")
 ):
     background_tasks.add_task(run_scout_task, platform, limit, query)
     return RedirectResponse(url="/interactions", status_code=303)
 
 @app.get("/interactions")
 def list_interactions(request: Request, platform: Optional[str] = None, db: Session = Depends(get_db)):
-    # Fetch all interactions (or implement pagination later)
     query = db.query(Interaction).order_by(Interaction.created_at.desc())
     
     if platform:
@@ -170,7 +207,6 @@ def list_interactions(request: Request, platform: Optional[str] = None, db: Sess
 
 @app.post("/interactions/{interaction_id}/like")
 def like_interaction(interaction_id: int, db: Session = Depends(get_db)):
-    # Get interaction to find external ID and platform
     interaction = db.query(Interaction).filter(Interaction.id == interaction_id).first()
     if interaction:
         success = False
@@ -180,23 +216,18 @@ def like_interaction(interaction_id: int, db: Session = Depends(get_db)):
             success = twitter_scout.like_post(interaction.external_post_id)
         
         if success:
-            # Update status in DB? 
-            # For now just logging, maybe update status to 'LIKED' if we had that status
             pass
             
     return RedirectResponse(url="/interactions", status_code=303)
 
 @app.post("/interactions/{interaction_id}/comment")
 def comment_interaction(interaction_id: int, db: Session = Depends(get_db)):
-    # 1. Fetch target interaction
     interaction = db.query(Interaction).filter(Interaction.id == interaction_id).first()
     if not interaction:
         return RedirectResponse(url="/interactions", status_code=303)
 
-    # 2. Fetch context (recent interactions)
     context_posts = get_all_interactions(limit=10)
 
-    # 3. Generate Comment
     generated_comment = interaction_agent.generate_comment(interaction, context_posts)
     
     if not generated_comment:
@@ -205,18 +236,14 @@ def comment_interaction(interaction_id: int, db: Session = Depends(get_db)):
 
     print(f"Generated Comment: {generated_comment}")
     
-    # 4. Post Comment & Like
     success = False
     if interaction.platform == "Reddit":
-        # Like first
         reddit_scout.like_post(interaction.external_post_id)
-        # Then comment
         success = reddit_scout.comment_post(interaction.external_post_id, generated_comment)
     elif interaction.platform == "Twitter":
         twitter_scout.like_post(interaction.external_post_id)
         success = twitter_scout.comment_post(interaction.external_post_id, generated_comment)
 
-    # 5. Update DB
     if success:
         interaction.bot_comment = generated_comment
         interaction.status = "POSTED"
