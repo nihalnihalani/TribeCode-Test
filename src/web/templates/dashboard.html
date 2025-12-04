@@ -48,8 +48,8 @@
         
         <div class="feed-preview">
             {% for interaction in interactions %}
-            <div style="padding: 1.25rem 0; border-bottom: 1px solid var(--border-color); display: flex; align-items: start; gap: 1rem;">
-                <div style="width: 42px; height: 42px; border-radius: 10px; background: rgba(56, 189, 248, 0.15); display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1px solid rgba(56, 189, 248, 0.2);">
+            <div class="feed-item">
+                <div class="feed-icon">
                     <img src="https://img.icons8.com/?id=ClbD5JTFM7FA&format=png&size=24" style="filter: invert(1);">
                 </div>
                 <div style="flex-grow: 1;">
@@ -61,7 +61,7 @@
                     </div>
                 </div>
                 {% if interaction.status == 'POSTED' %}
-                <span style="background: rgba(16, 185, 129, 0.15); color: var(--success-color); font-size: 0.7rem; padding: 4px 8px; border-radius: 4px; font-weight: 600; letter-spacing: 0.05em; border: 1px solid rgba(16, 185, 129, 0.2);">REPLIED</span>
+                <span class="feed-status">REPLIED</span>
                 {% endif %}
             </div>
             {% else %}
