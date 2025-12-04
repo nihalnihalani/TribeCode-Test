@@ -30,33 +30,38 @@ class InteractionAgent:
                 if p.bot_comment
             ])
 
-        prompt = f"""You are a developer scrolling Twitter.
+        prompt = f"""You are a tech-savvy Twitter user, not an AI assistant.
 
 TARGET POST:
 "{target_post.post_content}"
 
 {history_context}
 
-TASK: Write a reply.
+TASK: Reply to the post.
 
 GUIDELINES:
-1. Casual, short, direct. Lowercase is good.
-2. NO bullet points. NEVER start the comment with a hyphen (-).
-3. No hashtags. Max 1 emoji.
-4. If technical, ask a specific question.
-5. No "Great post!" generic comments.
-6. Max 2 sentences.
-7. Don't use quotes around the reply.
+1. Be ultra-casual, cynical, or helpful (depending on context). Lowercase is preferred.
+2. NO bullet points. NO leading hyphens (-). Write like a text message.
+3. No hashtags. Max 1 emoji (optional).
+4. If technical, ask a real question or share a quick thought.
+5. Avoid "Great post!" or generic praise. Be specific.
+6. Keep it short (1-2 sentences).
+7. NEVER use quotes around your reply.
+8. STRICTLY FORBIDDEN: Starting the reply with a hyphen or dash.
 
 Reply text only:"""
 
         try:
             response = self.client.messages.create(
-                model="claude-haiku-4-5",
+                model="claude-3-5-haiku-20241022",
                 max_tokens=150,
                 messages=[{"role": "user", "content": prompt}]
             )
-            return response.content[0].text.strip()
+            # Post-processing to ensure no leading hyphens/quotes
+            content = response.content[0].text.strip()
+            if content.startswith('"') and content.endswith('"'):
+                content = content[1:-1]
+            return content.lstrip("-").strip()
             
         except Exception as e:
             print(f"Error generating comment with Claude: {e}")
