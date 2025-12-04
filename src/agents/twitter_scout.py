@@ -550,7 +550,6 @@ class TwitterScout:
                     return self.like_post(tweet_id, page=page)
             finally:
                 self._lock.release()
-                return False # The inner call returns, but this outer wrapper handles the context
 
         # Actual Logic with 'page'
         try:
@@ -600,7 +599,6 @@ class TwitterScout:
                     return self.comment_post(tweet_id, text, page=page)
             finally:
                 self._lock.release()
-                return False
 
         try:
             # Navigate if needed
