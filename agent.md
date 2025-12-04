@@ -3,6 +3,7 @@
 ## User Rules
 - **Git Workflow**: Every time substantial changes are made, they must be pushed to the GitHub repository in the branch `nihal-branch` (or "nihal's branch") with proper comments. If the branch is not present, it must be created.
 - **Mock Data Usage**: Mock data is ONLY used to test the application (e.g. in `tests/`), NOT for the actual working of the application. Production code must rely on real data and integrations.
+- **LLM Model**: Always use `claude-haiku-4-5` for LLM generation throughout the project.
 
 ## General Agent Guidelines
 
