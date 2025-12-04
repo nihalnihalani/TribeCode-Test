@@ -2,6 +2,7 @@ import os
 import time
 import random
 import threading
+import traceback
 from typing import List, Dict, Optional
 from playwright.sync_api import sync_playwright, Page
 from src.database import save_interaction, get_all_interactions
@@ -338,12 +339,14 @@ class TwitterScout:
                             )
 
                             # Generate comment if missing (Draft Mode)
-                            if not interaction.bot_comment:
+                            # Check bot_comment immediately after save_interaction returns to avoid session issues
+                            existing_comment = interaction.bot_comment if hasattr(interaction, 'bot_comment') and interaction.bot_comment else None
+                            if not existing_comment:
                                 try:
                                     context_posts = get_all_interactions(limit=10)
                                     draft_comment = interaction_agent.generate_comment(interaction, context_posts)
                                     if draft_comment:
-                                        interaction.bot_comment = draft_comment
+                                        # Update via save_interaction instead of modifying detached object
                                         save_interaction(
                                             platform="Twitter",
                                             external_post_id=tweet_id,
@@ -479,14 +482,11 @@ class TwitterScout:
                             if page.query_selector('div[data-testid="tweetPhoto"]'):
                                 has_media = True
                             
-                            if has_media and auto_comment:
+                            # Determine if we should comment on this specific tweet
+                            should_comment = auto_comment
+                            if has_media and should_comment:
                                 print(f"  Skipping comment on {tweet_id} due to image/media.")
-                                # We can still like it though? User said "don't post a comment or reply"
-                                # Let's skip the whole engagement if it has media to be safe, or just comment?
-                                # "if the tweet has reference to image don't post a comment or reply"
-                                # Implementation: We will still Archive it, maybe Like it? 
-                                # Let's assume we skip comment only.
-                                auto_comment = False 
+                                should_comment = False 
 
                             # Save/Update DB first
                             interaction = save_interaction(
@@ -498,37 +498,47 @@ class TwitterScout:
                                 tag=current_tag
                             )
                             
+                            # Check bot_comment immediately after save_interaction to avoid session issues
+                            existing_comment = interaction.bot_comment if hasattr(interaction, 'bot_comment') and interaction.bot_comment else None
+                            
                             # Like
                             if auto_like:
                                 self.like_post(tweet_id, page=page)
                             
                             # Comment
-                            if auto_comment:
+                            if should_comment:
                                 # Check if we already commented
-                                if interaction.bot_comment:
+                                if existing_comment:
                                     print("  Already commented on this tweet. Skipping.")
                                 else:
                                     # Generate Context
                                     context_posts = get_all_interactions(limit=10)
-                                    comment_text = interaction_agent.generate_comment(interaction, context_posts)
-                                    
-                                    if comment_text:
-                                        print(f"  Generated Comment: {comment_text}")
-                                        success = self.comment_post(tweet_id, comment_text, page=page)
-                                        if success:
-                                            interaction.bot_comment = comment_text
-                                            interaction.status = "POSTED"
-                                            # Update DB? save_interaction updates fields passed, but here we updated object
-                                            # We should call save_interaction again or update manually.
-                                            # save_interaction handles updates if ID exists.
-                                            save_interaction(
-                                                platform="Twitter",
-                                                external_post_id=tweet_id,
-                                                post_content=text,
-                                                status="POSTED",
-                                                bot_comment=comment_text,
-                                                tag=current_tag
-                                            )
+                                    try:
+                                        comment_text = interaction_agent.generate_comment(interaction, context_posts)
+                                        
+                                        if comment_text:
+                                            print(f"  Generated Comment: {comment_text}")
+                                            success = self.comment_post(tweet_id, comment_text, page=page)
+                                            if success:
+                                                # Update DB with posted comment - don't modify detached object
+                                                save_interaction(
+                                                    platform="Twitter",
+                                                    external_post_id=tweet_id,
+                                                    post_content=text,
+                                                    status="POSTED",
+                                                    bot_comment=comment_text,
+                                                    tag=current_tag
+                                                )
+                                                print(f"  Successfully posted comment to {tweet_id}")
+                                            else:
+                                                print(f"  Failed to post comment to {tweet_id}")
+                                        else:
+                                            print(f"  [Warning] Generated comment was empty/None for {tweet_id}")
+                                    except Exception as e:
+                                        print(f"  [Error] Failed during comment generation/posting for {tweet_id}: {e}")
+                                        traceback.print_exc()
+                            elif auto_comment and not should_comment:
+                                print(f"  [Info] Commenting skipped for {tweet_id} (Media restricted).")
                             
                             processed_count += 1
                             time.sleep(random.uniform(2, 5)) # Human pause
@@ -692,7 +702,7 @@ class TwitterScout:
                         continue
                 
                 if not input_found:
-                    print("  Could not find reply input area with known selectors.")
+                    print(f"  [Comment Post] Could not find reply input area for {tweet_id} with known selectors.")
                     return False
 
                 # Type the text
@@ -703,23 +713,27 @@ class TwitterScout:
                 submit_btn = page.wait_for_selector('button[data-testid="tweetButtonInline"]', timeout=5000)
                 if submit_btn:
                     if submit_btn.is_disabled():
-                        print("  Reply button disabled - text might not have entered.")
+                        print(f"  [Comment Post] Reply button disabled for {tweet_id} - text might not have entered.")
                         return False
                     else:
                         submit_btn.click()
-                        print(f"  Replied to {tweet_id}")
+                        print(f"  [Comment Post] Clicked submit button for {tweet_id}")
                         # Wait for post to complete (button disappears or toast appears)
                         time.sleep(3)
+                        # Verify the comment was posted by checking if the reply button is still visible or if our comment appears
+                        print(f"  [Comment Post] Successfully posted comment to {tweet_id}")
                         return True
                 else:
-                    print("  Could not find reply submit button.")
+                    print(f"  [Comment Post] Could not find reply submit button for {tweet_id}")
             except Exception as e:
-                print(f"  Reply failed: {e}")
+                print(f"  [Comment Post] Reply failed for {tweet_id}: {e}")
+                traceback.print_exc()
             
             return False
 
         except Exception as e:
-            print(f"Reply Error: {e}")
+            print(f"  [Comment Post] Reply Error for {tweet_id}: {e}")
+            traceback.print_exc()
             return False
 
 twitter_scout = TwitterScout()
