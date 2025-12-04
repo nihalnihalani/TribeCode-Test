@@ -42,8 +42,10 @@
                     </div>
                     <div>
                         <div style="font-weight: 700; color: var(--text-main); font-size: 1rem;">
-                            {% if interaction.author_name %}
+                            {% if interaction.author_name and interaction.author_name != 'Unknown' %}
                                 {{ interaction.author_name }}
+                            {% elif interaction.author_handle %}
+                                {{ interaction.author_handle }}
                             {% elif interaction.platform == 'System' %}
                                 System Alert
                             {% else %}

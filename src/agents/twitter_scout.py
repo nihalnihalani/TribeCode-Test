@@ -302,8 +302,13 @@ class TwitterScout:
                             user_el = tweet_el.query_selector('div[data-testid="User-Name"]')
                             author_name = "Unknown"
                             if user_el:
-                                raw_user_text = user_el.inner_text()
-                                author_name = raw_user_text.split('\n')[0]
+                                try:
+                                    raw_user_text = user_el.inner_text()
+                                    parts = [p.strip() for p in raw_user_text.split('\n') if p.strip()]
+                                    if parts:
+                                        author_name = parts[0]
+                                except:
+                                    pass
 
                             metrics = {"replies": 0, "retweets": 0, "likes": 0}
                             def get_metric(testid):
@@ -479,6 +484,26 @@ class TwitterScout:
                             if page.query_selector('div[data-testid="tweetPhoto"]'):
                                 has_media = True
                             
+                            # Extract Author Details
+                            author_name = "Unknown"
+                            author_handle = None
+                            
+                            try:
+                                # User-Name div usually contains: Name \n @handle \n ...
+                                user_el = page.query_selector('div[data-testid="User-Name"]')
+                                if user_el:
+                                    raw_text = user_el.inner_text()
+                                    parts = [p.strip() for p in raw_text.split('\n') if p.strip()]
+                                    if parts:
+                                        author_name = parts[0]
+                                        # Try to find handle in parts (starts with @)
+                                        for p in parts:
+                                            if p.startswith('@'):
+                                                author_handle = p
+                                                break
+                            except Exception as e:
+                                print(f"  Could not extract author details: {e}")
+
                             if has_media and auto_comment:
                                 print(f"  Skipping comment on {tweet_id} due to image/media.")
                                 # We can still like it though? User said "don't post a comment or reply"
@@ -495,7 +520,9 @@ class TwitterScout:
                                 post_content=text,
                                 status="ARCHIVED",
                                 post_url=tweet_url,
-                                tag=current_tag
+                                tag=current_tag,
+                                author_name=author_name,
+                                author_handle=author_handle
                             )
                             
                             # Engage Logic (Unified)

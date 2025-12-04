@@ -58,7 +58,7 @@ GUIDELINES:
 3. No hashtags. Max 1 emoji (only if it really fits).
 4. If the post is technical, ask a specific relevant question or share a quick, insightful thought.
 5. Avoid generic praise like "Great post!" or "Awesome!". Be specific to the content.
-6. Keep it short (1-2 sentences).
+6. Keep it short and crispy (strictly under 150 characters).
 7. NEVER use quotes around your reply.
 8. STRICTLY FORBIDDEN: Starting the reply with a hyphen or dash.
 9. If the author is mentioned, talk TO them, not AT them.
@@ -69,14 +69,20 @@ Reply text only:"""
         try:
             response = self.client.messages.create(
                 model="claude-3-haiku-20240307",
-                max_tokens=150,
+                max_tokens=100,
                 messages=[{"role": "user", "content": prompt}]
             )
             # Post-processing to ensure no leading hyphens/quotes
             content = response.content[0].text.strip()
             if content.startswith('"') and content.endswith('"'):
                 content = content[1:-1]
-            return content.lstrip("-").strip()
+            content = content.lstrip("-").strip()
+            
+            # Hard enforcement of length
+            if len(content) > 150:
+                content = content[:147] + "..."
+            
+            return content
             
         except Exception as e:
             print(f"Error generating comment with Claude: {e}")
