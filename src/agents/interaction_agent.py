@@ -32,7 +32,11 @@ class InteractionAgent:
             ])
 
         # Enrich context with author and topic details
-        author_context = f"Author: {target_post.author_name} (@{target_post.author_handle})" if target_post.author_handle else ""
+        handle = target_post.author_handle
+        if handle and not handle.startswith("@"):
+            handle = f"@{handle}"
+            
+        author_context = f"Author: {target_post.author_name} ({handle})" if handle else ""
         topic_context = f"Topic/Tag: {target_post.tag}" if target_post.tag else ""
         
         prompt = f"""You are a tech-savvy Twitter user. You are NOT an AI assistant. You are a real person interacting on social media.

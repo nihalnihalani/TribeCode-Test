@@ -498,37 +498,33 @@ class TwitterScout:
                                 tag=current_tag
                             )
                             
-                            # Like
-                            if auto_like:
-                                self.like_post(tweet_id, page=page)
-                            
-                            # Comment
-                            if auto_comment:
-                                # Check if we already commented
-                                if interaction.bot_comment:
-                                    print("  Already commented on this tweet. Skipping.")
-                                else:
-                                    # Generate Context
-                                    context_posts = get_all_interactions(limit=10)
-                                    comment_text = interaction_agent.generate_comment(interaction, context_posts)
-                                    
-                                    if comment_text:
-                                        print(f"  Generated Comment: {comment_text}")
-                                        success = self.comment_post(tweet_id, comment_text, page=page)
-                                        if success:
-                                            interaction.bot_comment = comment_text
-                                            interaction.status = "POSTED"
-                                            # Update DB? save_interaction updates fields passed, but here we updated object
-                                            # We should call save_interaction again or update manually.
-                                            # save_interaction handles updates if ID exists.
-                                            save_interaction(
-                                                platform="Twitter",
-                                                external_post_id=tweet_id,
-                                                post_content=text,
-                                                status="POSTED",
-                                                bot_comment=comment_text,
-                                                tag=current_tag
-                                            )
+                            # Engage Logic (Unified)
+                            if auto_like or auto_comment:
+                                comment_text = None
+                                if auto_comment:
+                                    if interaction.bot_comment:
+                                        print("  Already commented on this tweet. Skipping comment generation.")
+                                    else:
+                                        # Generate Context
+                                        context_posts = get_all_interactions(limit=10)
+                                        comment_text = interaction_agent.generate_comment(interaction, context_posts)
+                                        if comment_text:
+                                            print(f"  Generated Comment: {comment_text}")
+                                            
+                                # Call unified engage method
+                                success = self.engage_post(tweet_id, comment_text, like=auto_like, page=page)
+                                
+                                if success and comment_text:
+                                    interaction.bot_comment = comment_text
+                                    interaction.status = "POSTED"
+                                    save_interaction(
+                                        platform="Twitter",
+                                        external_post_id=tweet_id,
+                                        post_content=text,
+                                        status="POSTED",
+                                        bot_comment=comment_text,
+                                        tag=current_tag
+                                    )
                             
                             processed_count += 1
                             time.sleep(random.uniform(2, 5)) # Human pause
@@ -548,9 +544,10 @@ class TwitterScout:
         finally:
             self._lock.release()
 
-    def engage_post(self, tweet_id: str, text: str, like: bool = True, page: Page = None) -> bool:
+    def engage_post(self, tweet_id: str, text: Optional[str] = None, like: bool = True, page: Page = None) -> bool:
         """
-        Likes and replies to a tweet in a single session.
+        Likes and optionally replies to a tweet in a single session.
+        If text is None, skips comment.
         """
         if page is None:
             # Standalone wrapper
@@ -564,7 +561,7 @@ class TwitterScout:
                 self._lock.release()
 
         try:
-            print(f"  [Engage] Starting engagement for {tweet_id} (Like={like})")
+            print(f"  [Engage] Starting engagement for {tweet_id} (Like={like}, Comment={bool(text)})")
             # Navigate if needed
             if tweet_id not in page.url:
                 url = f"https://twitter.com/i/web/status/{tweet_id}"
@@ -591,8 +588,11 @@ class TwitterScout:
                     print(f"  [Engage] Like failed in engage_post: {e}")
 
             # 2. Comment
-            print("  [Engage] Step 2: Attempting to Reply...")
-            return self.comment_post(tweet_id, text, page=page)
+            if text:
+                print("  [Engage] Step 2: Attempting to Reply...")
+                return self.comment_post(tweet_id, text, page=page)
+            
+            return True # Success if we got here and didn't crash
 
         except Exception as e:
             print(f"Engage Post Error: {e}")
