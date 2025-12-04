@@ -564,28 +564,34 @@ class TwitterScout:
                 self._lock.release()
 
         try:
+            print(f"  [Engage] Starting engagement for {tweet_id} (Like={like})")
             # Navigate if needed
             if tweet_id not in page.url:
                 url = f"https://twitter.com/i/web/status/{tweet_id}"
+                print(f"  [Engage] Navigating to {url}")
                 page.goto(url)
                 page.wait_for_selector('article[data-testid="tweet"]', timeout=10000)
 
             # 1. Like
             if like:
+                print("  [Engage] Step 1: Attempting to Like...")
                 try:
                     if page.query_selector('button[data-testid="unlike"]'):
-                        print(f"  Tweet {tweet_id} is already liked.")
+                        print(f"  [Engage] Tweet {tweet_id} is already liked.")
                     else:
                         like_button = page.wait_for_selector('button[data-testid="like"]', timeout=5000)
                         if like_button:
                             like_button.scroll_into_view_if_needed()
                             like_button.click()
-                            print(f"  Clicked Like on {tweet_id}")
+                            print(f"  [Engage] Clicked Like on {tweet_id}")
                             time.sleep(1)
+                        else:
+                            print("  [Engage] Like button not found.")
                 except Exception as e:
-                    print(f"  Like failed in engage_post: {e}")
+                    print(f"  [Engage] Like failed in engage_post: {e}")
 
             # 2. Comment
+            print("  [Engage] Step 2: Attempting to Reply...")
             return self.comment_post(tweet_id, text, page=page)
 
         except Exception as e:

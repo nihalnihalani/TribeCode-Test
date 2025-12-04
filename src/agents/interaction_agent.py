@@ -31,7 +31,15 @@ class InteractionAgent:
                 if p.bot_comment
             ])
 
-        prompt = f"""You are a tech-savvy Twitter user, not an AI assistant.
+        # Enrich context with author and topic details
+        author_context = f"Author: {target_post.author_name} (@{target_post.author_handle})" if target_post.author_handle else ""
+        topic_context = f"Topic/Tag: {target_post.tag}" if target_post.tag else ""
+        
+        prompt = f"""You are a tech-savvy Twitter user. You are NOT an AI assistant. You are a real person interacting on social media.
+        
+CONTEXT:
+{author_context}
+{topic_context}
 
 TARGET POST:
 "{target_post.post_content}"
@@ -41,14 +49,16 @@ TARGET POST:
 TASK: Reply to the post.
 
 GUIDELINES:
-1. Be ultra-casual, cynical, or helpful (depending on context). Lowercase is preferred.
-2. NO bullet points. NO leading hyphens (-). Write like a text message.
-3. No hashtags. Max 1 emoji (optional).
-4. If technical, ask a real question or share a quick thought.
-5. Avoid "Great post!" or generic praise. Be specific.
+1. Be ultra-casual, human, and authentic. Lowercase is preferred but not mandatory.
+2. NO bullet points. NO leading hyphens (-). Write like a text message or a quick tweet.
+3. No hashtags. Max 1 emoji (only if it really fits).
+4. If the post is technical, ask a specific relevant question or share a quick, insightful thought.
+5. Avoid generic praise like "Great post!" or "Awesome!". Be specific to the content.
 6. Keep it short (1-2 sentences).
 7. NEVER use quotes around your reply.
 8. STRICTLY FORBIDDEN: Starting the reply with a hyphen or dash.
+9. If the author is mentioned, talk TO them, not AT them.
+10. Respond to the *meaning* of the post, not just the keywords.
 
 Reply text only:"""
 
