@@ -81,55 +81,62 @@ def mock_playwright():
 
 def test_twitter_fetch_posts(mock_playwright, db_session):
     """Test fetching posts from Twitter."""
-    scout = TwitterScout()
-    
-    # Mock Context Manager
-    mock_p = mock_playwright.return_value.__enter__.return_value
-    mock_browser = mock_p.chromium.launch_persistent_context.return_value
-    mock_page = mock_browser.new_page.return_value
-    
-    # Mock Elements
-    mock_tweet = MagicMock()
-    
-    # Mock Time/Link element
-    mock_time = MagicMock()
-    mock_link_parent = MagicMock()
-    mock_link_parent.get_attribute.return_value = "/user/status/tweet_456"
-    mock_time.query_selector.return_value = mock_link_parent
-    mock_tweet.query_selector.side_effect = lambda s: mock_time if s == 'time' else MagicMock()
-    
-    # Mock Text
-    mock_text_el = MagicMock()
-    mock_text_el.inner_text.return_value = "Hello Twitter"
-    
-    # Mock Author
-    mock_user_el = MagicMock()
-    mock_user_el.inner_text.return_value = "UserHandle"
-    
-    # Setup query_selector for tweet internals
-    def tweet_query_selector(selector):
-        if selector == 'time': return mock_time
-        if selector == 'div[data-testid="tweetText"]': return mock_text_el
-        if selector == 'div[data-testid="User-Name"]': return mock_user_el
-        return None
-    
-    mock_tweet.query_selector.side_effect = tweet_query_selector
-    
-    # Return list of tweets
-    mock_page.query_selector_all.return_value = [mock_tweet]
-    
-    # Run fetch
-    posts = scout.fetch_posts(["keyword"], limit=1)
-    
-    assert len(posts) == 1
-    assert posts[0]["id"] == "tweet_456"
-    assert posts[0]["text"] == "Hello Twitter"
-    
-    # Verify saved to DB
-    saved_posts = db_session.query(Interaction).all()
-    assert len(saved_posts) == 1
-    assert saved_posts[0].external_post_id == "tweet_456"
-    assert saved_posts[0].platform == "Twitter"
+    with patch("src.agents.twitter_scout.interaction_agent") as mock_agent:
+        mock_agent.generate_comment.return_value = "Draft Comment"
+        
+        scout = TwitterScout()
+        
+        # Mock Context Manager
+        mock_p = mock_playwright.return_value.__enter__.return_value
+        mock_browser = mock_p.chromium.launch_persistent_context.return_value
+        mock_page = mock_browser.new_page.return_value
+        
+        # Mock Elements
+        mock_tweet = MagicMock()
+        
+        # Mock Time/Link element
+        mock_time = MagicMock()
+        mock_link_parent = MagicMock()
+        mock_link_parent.get_attribute.return_value = "/user/status/tweet_456"
+        mock_time.query_selector.return_value = mock_link_parent
+        mock_tweet.query_selector.side_effect = lambda s: mock_time if s == 'time' else MagicMock()
+        
+        # Mock Text
+        mock_text_el = MagicMock()
+        mock_text_el.inner_text.return_value = "Hello Twitter"
+        
+        # Mock Author
+        mock_user_el = MagicMock()
+        mock_user_el.inner_text.return_value = "UserHandle"
+        
+        # Setup query_selector for tweet internals
+        def tweet_query_selector(selector):
+            if selector == 'time': return mock_time
+            if selector == 'div[data-testid="tweetText"]': return mock_text_el
+            if selector == 'div[data-testid="User-Name"]': return mock_user_el
+            return None
+        
+        mock_tweet.query_selector.side_effect = tweet_query_selector
+        
+        # Return list of tweets
+        mock_page.query_selector_all.return_value = [mock_tweet]
+        
+        # Run fetch
+        posts = scout.fetch_posts(["keyword"], limit=1)
+        
+        assert len(posts) == 1
+        assert posts[0]["id"] == "tweet_456"
+        assert posts[0]["text"] == "Hello Twitter"
+        
+        # Verify saved to DB
+        saved_posts = db_session.query(Interaction).all()
+        assert len(saved_posts) == 1
+        assert saved_posts[0].external_post_id == "tweet_456"
+        assert saved_posts[0].platform == "Twitter"
+        
+        # Verify comment was generated and saved
+        mock_agent.generate_comment.assert_called_once()
+        assert saved_posts[0].bot_comment == "Draft Comment"
 
 def test_twitter_ensure_logged_in(mock_playwright):
     """Test login check logic."""
@@ -200,7 +207,7 @@ def test_agent_generate_comment(mock_anthropic, mock_env):
     
     # Verify model name
     call_args = agent.client.messages.create.call_args
-    assert call_args.kwargs['model'] == "claude-haiku-4-5-20251001"
+    assert call_args.kwargs['model'] == "claude-3-5-haiku-20241022"
 
 def test_agent_no_key(monkeypatch):
     """Test agent without API key."""

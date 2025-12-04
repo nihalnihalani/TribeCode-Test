@@ -5,6 +5,7 @@ import threading
 from typing import List, Dict, Optional
 from playwright.sync_api import sync_playwright, Page
 from src.database import save_interaction, get_all_interactions
+from src.agents.interaction_agent import interaction_agent
 
 class TwitterScout:
     # Class-level lock to prevent multiple Playwright instances from conflicting
@@ -323,7 +324,7 @@ class TwitterScout:
                                 print(f"  Skipping Tweet {tweet_id} (Has Image)")
                                 continue
 
-                            save_interaction(
+                            interaction = save_interaction(
                                 platform="Twitter",
                                 external_post_id=tweet_id,
                                 post_content=text,
@@ -335,6 +336,23 @@ class TwitterScout:
                                 media_url=media_url,
                                 tag=current_tag
                             )
+
+                            # Generate comment if missing (Draft Mode)
+                            if not interaction.bot_comment:
+                                try:
+                                    context_posts = get_all_interactions(limit=10)
+                                    draft_comment = interaction_agent.generate_comment(interaction, context_posts)
+                                    if draft_comment:
+                                        interaction.bot_comment = draft_comment
+                                        save_interaction(
+                                            platform="Twitter",
+                                            external_post_id=tweet_id,
+                                            post_content=text,
+                                            bot_comment=draft_comment
+                                        )
+                                        print(f"  [Auto-Draft] Comment generated: {draft_comment}")
+                                except Exception as e:
+                                    print(f"  [Auto-Draft] Failed to generate comment: {e}")
                             
                             found_tweets.append({
                                 "id": tweet_id, "text": text, "author": author_name,
