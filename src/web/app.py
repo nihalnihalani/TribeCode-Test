@@ -13,7 +13,6 @@ import concurrent.futures
 from src.database import init_db, get_db, get_all_interactions, Interaction, save_interaction
 from src.agents.twitter_scout import twitter_scout
 from src.agents.interaction_agent import interaction_agent
-from src.utils.browser_setup import setup_twitter_login
 from src.agents.semantic_filter import semantic_filter, keyword_prefilter
 
 app = FastAPI(title="VibeBot Dashboard")
@@ -33,7 +32,7 @@ def auto_scout_loop():
         try:
             print("Auto-Scout: Running scheduled Twitter search...")
             # Default query for auto-scout
-            keywords = ["build in public", "indie hacker", "saas mvp"]
+            keywords = ["build in public", "indie hacker", "saas mvp", "cursor", "claude code"]
             
             # We run them sequentially in the background thread, 
             # but triggering run_scout_task will use the parallel executor internally if applicable.
@@ -100,7 +99,7 @@ def run_twitter_task(query: str, limit: int, auto_like: bool = False, auto_comme
     try:
         search_queries = []
         if query.strip().lower() == "auto":
-            search_queries = ["build in public", "vibe coding", "indie hacker", "saas mvp", "startup", "side project"]
+            search_queries = ["build in public", "vibe coding", "indie hacker", "saas mvp", "startup", "side project", "cursor", "claude code"]
         else:
             search_queries = [k.strip() for k in query.split(",") if k.strip()]
         
@@ -177,7 +176,7 @@ def run_scout_task(platform: str, limit: int, query: str = "build in public", au
     with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
         futures = []
         
-        # Always default to Twitter since Reddit is removed
+        # Only Twitter is supported
         futures.append(executor.submit(run_twitter_task, query, limit, auto_like, auto_comment))
         
         # Wait for all tasks to complete

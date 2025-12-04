@@ -4,14 +4,14 @@ from src.database import Interaction, save_interaction, check_deduplication, get
 def test_save_interaction(db_session):
     """Test saving a new interaction."""
     interaction = save_interaction(
-        platform="Reddit",
+        platform="Twitter",
         external_post_id="post_123",
         post_content="Test content",
         status="ARCHIVED"
     )
     
     assert interaction.id is not None
-    assert interaction.platform == "Reddit"
+    assert interaction.platform == "Twitter"
     assert interaction.external_post_id == "post_123"
     assert interaction.status == "ARCHIVED"
 
@@ -19,14 +19,14 @@ def test_save_duplicate_interaction(db_session):
     """Test that saving a duplicate interaction returns the existing one."""
     # Save first time
     first = save_interaction(
-        platform="Reddit",
+        platform="Twitter",
         external_post_id="post_duplicate",
         post_content="Original content"
     )
     
     # Save second time
     second = save_interaction(
-        platform="Reddit",
+        platform="Twitter",
         external_post_id="post_duplicate",
         post_content="New content" # Should be ignored or updated depending on logic
     )
@@ -44,7 +44,7 @@ def test_check_deduplication(db_session):
 
 def test_get_all_interactions(db_session):
     """Test retrieving all interactions."""
-    save_interaction("Reddit", "r1", "content")
+    save_interaction("Twitter", "r1", "content")
     save_interaction("Twitter", "t1", "content")
     
     interactions = get_all_interactions()
@@ -67,4 +67,4 @@ def test_save_interaction_error_handling(db_session):
     # Patch SessionLocal to return this mock session
     with patch("src.database.SessionLocal", return_value=mock_session):
         with pytest.raises(SQLAlchemyError):
-            save_interaction("Reddit", "error_post", "content")
+            save_interaction("Twitter", "error_post", "content")

@@ -53,7 +53,7 @@ Reply text only:"""
 
         try:
             response = self.client.messages.create(
-                model="claude-haiku-4-5",
+                model="claude-3-haiku-20240307",
                 max_tokens=150,
                 messages=[{"role": "user", "content": prompt}]
             )

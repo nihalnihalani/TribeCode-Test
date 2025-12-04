@@ -1,7 +1,6 @@
-
 <div align="center">
 
-# 🤖 VibeBot
+# 🤖 VibeBot (BuildRadar)
 ### Autonomous Build-in-Public Engagement Agent
 
 <a href="https://github.com/yourusername/vibebot">
@@ -18,7 +17,7 @@
 
 <p align="center">
   <b>Filter noise. Find signal. Engage authentically.</b><br>
-  VibeBot is an autonomous intelligence that identifies high-value "Build in Public" content on X (Twitter) and Reddit, filters out spam, and engages using a context-aware Persona Engine.
+  VibeBot is an autonomous intelligence that identifies high-value "Build in Public" content on X (Twitter), filters out spam, and engages using a context-aware Persona Engine.
 </p>
 
 </div>
@@ -57,7 +56,7 @@ The "Build in Public" movement creates a high-velocity stream of content. Develo
     <td width="50%" valign="top">
       <h3><img src="https://img.icons8.com/?id=63315&format=png&size=24" width="24" height="24" style="vertical-align: middle; margin-right: 8px;"> The Scout (Discovery)</h3>
       <ul>
-        <li><b>Multi-Platform Radar:</b> Scrapes X (Twitter) and Reddit simultaneously.</li>
+        <li><b>Twitter Radar:</b> Scrapes X (Twitter) for high-signal keywords.</li>
         <li><b>Smart Filtering:</b> Ignores memes/images to focus on text-heavy technical posts.</li>
         <li><b>Persistent Browser:</b> Uses Playwright with saved sessions to evade bot detection.</li>
       </ul>
@@ -101,7 +100,7 @@ The "Build in Public" movement creates a high-velocity stream of content. Develo
 |----------|--------------|
 | **Core** | ![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white) ![Pydantic](https://img.shields.io/badge/Pydantic-E92063?style=for-the-badge&logo=pydantic&logoColor=white) |
 | **Web** | ![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white) ![Jinja2](https://img.shields.io/badge/Jinja2-B41717?style=for-the-badge&logo=jinja&logoColor=white) |
-| **AI & LLM** | ![Anthropic](https://img.shields.io/badge/Anthropic-D97757?style=for-the-badge&logo=anthropic&logoColor=white) ![OpenAI](https://img.shields.io/badge/OpenAI-412991?style=for-the-badge&logo=openai&logoColor=white) |
+| **AI & LLM** | ![Anthropic](https://img.shields.io/badge/Anthropic-D97757?style=for-the-badge&logo=anthropic&logoColor=white) |
 | **Browser** | ![Playwright](https://img.shields.io/badge/Playwright-45ba4b?style=for-the-badge&logo=playwright&logoColor=white) |
 | **Data** | ![SQLite](https://img.shields.io/badge/SQLite-07405E?style=for-the-badge&logo=sqlite&logoColor=white) ![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-D71F00?style=for-the-badge&logo=sqlalchemy&logoColor=white) |
 | **Testing** | ![Pytest](https://img.shields.io/badge/Pytest-0A9EDC?style=for-the-badge&logo=pytest&logoColor=white) |
@@ -114,8 +113,8 @@ The "Build in Public" movement creates a high-velocity stream of content. Develo
 
 ```text
 +------------------+       +------------------+       +------------------+
-|   User Dashboard |       |   Scout Agents   |       |   Intelligence   |
-|   (FastAPI/Web)  | <---> | (Reddit/Twitter) | <---> | (Claude 3.5 AI)  |
+|   User Dashboard |       |   Twitter Scout  |       |   Intelligence   |
+|   (FastAPI/Web)  | <---> |   (Playwright)   | <---> | (Claude 3.5 AI)  |
 +------------------+       +------------------+       +------------------+
           ^                         |                          |
           |                         v                          v
@@ -154,7 +153,7 @@ The dashboard is powered by a robust REST API.
 | `GET` | `/api/scout` | Trigger a manual scouting run | ✅ |
 | `GET` | `/api/interactions` | Retrieve paginated feed of interactions | ❌ |
 | `POST` | `/api/engage/{id}` | Approve and post a drafted reply | ✅ |
-| `GET` | `/settings` | Manage Twitter/Reddit session cookies | ✅ |
+| `GET` | `/settings` | Manage Twitter session cookies | ✅ |
 
 ---
 
@@ -164,7 +163,7 @@ We use a relational schema optimized for text analysis and metrics tracking.
 
 **Interactions Table**
 - `id` (Primary Key): Unique interaction ID
-- `platform` (String): 'twitter' or 'reddit'
+- `platform` (String): 'twitter'
 - `content` (Text): The raw post content
 - `author` (String): Username of the poster
 - `status` (Enum): `NEW`, `ARCHIVED`, `PLANNED`, `POSTED`
@@ -196,8 +195,8 @@ playwright install chromium
 3. **Configure Environment**
    Create a `.env` file:
    ```bash
-ANTHROPIC_API_KEY=sk-ant-...
-DATABASE_URL=sqlite:///vibebot.db
+   ANTHROPIC_API_KEY=sk-ant-...
+   DATABASE_URL=sqlite:///vibebot.db
    ```
 
 4. **Run the Dashboard**

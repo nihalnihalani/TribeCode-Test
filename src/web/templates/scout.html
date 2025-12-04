@@ -29,6 +29,8 @@
                         <span class="platform-badge twitter">saas mvp</span>
                         <span class="platform-badge twitter">startup</span>
                         <span class="platform-badge twitter">side project</span>
+                        <span class="platform-badge twitter">cursor</span>
+                        <span class="platform-badge twitter">claude code</span>
                     </div>
                     <p class="text-muted text-sm" style="margin-top: 0.5rem; margin-bottom: 0;">
                         The scout will automatically search Twitter for these high-signal topics.
@@ -40,7 +42,7 @@
             <div class="form-group">
                 <label class="form-label">Volume Limit</label>
                 <div style="display: flex; align-items: center; gap: 1rem;">
-                    <input type="range" name="limit" min="5" max="50" value="20" oninput="this.nextElementSibling.value = this.value" style="flex-grow: 1; accent-color: var(--primary-color);">
+                    <input type="range" name="limit" min="5" max="50" value="20" oninput="this.nextElementSibling.querySelector('output').value = this.value" style="flex-grow: 1; accent-color: var(--primary-color);">
                     <span style="background: var(--bg-input); padding: 4px 8px; border-radius: 4px; font-family: monospace; color: var(--text-main); min-width: 36px; text-align: center; border: 1px solid var(--border-color);"><output>20</output></span>
                 </div>
             </div>

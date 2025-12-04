@@ -39,7 +39,7 @@ def test_interactions_page(client, db_session):
 
 def test_scout_trigger(client):
     response = client.post("/scout", data={
-        "platform": "reddit",
+        "platform": "twitter",
         "limit": 5,
         "query": "test"
     })

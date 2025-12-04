@@ -1,76 +1,9 @@
 import pytest
 from unittest.mock import MagicMock, patch
-from src.agents.reddit_scout import RedditScout
 from src.agents.twitter_scout import TwitterScout
 from src.agents.interaction_agent import InteractionAgent
 from src.agents.semantic_filter import SemanticFilter, keyword_prefilter
 from src.database import Interaction
-
-# --- RedditScout Tests ---
-
-@pytest.fixture
-def mock_praw(mock_env):
-    with patch("src.agents.reddit_scout.praw.Reddit") as mock:
-        yield mock
-
-def test_reddit_scout_init(mock_praw, mock_env):
-    """Test RedditScout initialization with credentials."""
-    scout = RedditScout()
-    assert scout.reddit is not None
-    mock_praw.assert_called_once()
-
-def test_reddit_scout_init_no_creds(monkeypatch):
-    """Test RedditScout initialization without credentials."""
-    monkeypatch.delenv("REDDIT_CLIENT_ID", raising=False)
-    scout = RedditScout()
-    assert scout.reddit is None
-
-def test_reddit_fetch_posts(mock_praw, db_session, mock_env):
-    """Test fetching posts from Reddit."""
-    scout = RedditScout()
-    
-    # Mock subreddit search
-    mock_subreddit = MagicMock()
-    scout.reddit.subreddit.return_value = mock_subreddit
-    
-    # Mock submissions
-    mock_submission = MagicMock()
-    mock_submission.id = "post_123"
-    mock_submission.title = "Test Post"
-    mock_submission.selftext = "Test Content"
-    mock_submission.url = "http://reddit.com/post_123"
-    mock_submission.author = "test_author"
-    
-    mock_subreddit.search.return_value = [mock_submission]
-    
-    # Run fetch
-    posts = scout.fetch_posts(["test_sub"], "query", limit=1)
-    
-    assert len(posts) == 1
-    assert posts[0]["external_post_id"] == "post_123"
-    assert posts[0]["title"] == "Test Post"
-    
-    # Verify saved to DB
-    saved_posts = db_session.query(Interaction).all()
-    assert len(saved_posts) == 1
-    assert saved_posts[0].external_post_id == "post_123"
-    assert saved_posts[0].platform == "Reddit"
-
-def test_reddit_actions(mock_praw, mock_env):
-    """Test like and comment actions."""
-    scout = RedditScout()
-    
-    # Mock submission
-    mock_submission = MagicMock()
-    scout.reddit.submission.return_value = mock_submission
-    
-    # Test Like
-    assert scout.like_post("123") is True
-    mock_submission.upvote.assert_called_once()
-    
-    # Test Comment
-    assert scout.comment_post("123", "Nice!") is True
-    mock_submission.reply.assert_called_with("Nice!")
 
 # --- TwitterScout Tests ---
 
@@ -172,7 +105,13 @@ def test_twitter_skip_image(mock_playwright):
     
     # Mock Tweet with Image
     mock_tweet = MagicMock()
-    mock_tweet.query_selector.side_effect = lambda s: MagicMock() if s == 'div[data-testid="tweetPhoto"] img' else None
+    
+    def tweet_query_selector(selector):
+        if selector == 'time': return MagicMock() # Return valid time element
+        if selector == 'div[data-testid="tweetPhoto"] img': return MagicMock() # Has Image
+        return None
+
+    mock_tweet.query_selector.side_effect = tweet_query_selector
     
     mock_page.query_selector_all.return_value = [mock_tweet]
     
@@ -244,6 +183,6 @@ def test_keyword_prefilter():
     # Assuming it filters for 'launch', 'project' etc.
     
     filtered = keyword_prefilter(posts)
-    # We just assert it returns a list for now, or check specific behavior if we knew the list.
-    # Based on previous test file, it seemed to expect 1 result.
-    assert isinstance(filtered, list)
+    # Assert we filtered out the "Hiring" and "Random" posts
+    assert len(filtered) == 1
+    assert filtered[0]["text"] == "Just launched my project"

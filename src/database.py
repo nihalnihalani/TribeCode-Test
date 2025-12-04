@@ -98,6 +98,7 @@ def save_interaction(
             if bot_comment: existing.bot_comment = bot_comment
             
             session.commit()
+            session.refresh(existing)
             return existing
         
         new_interaction = Interaction(
