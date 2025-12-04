@@ -76,6 +76,18 @@
                     <img src="{{ interaction.media_url }}" style="width: 100%; display: block;">
                 </div>
                 {% endif %}
+
+                {% if interaction.status == 'POSTED' and interaction.bot_comment %}
+                <div class="bot-reply" style="margin-top: 1rem; padding: 1rem; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 8px;">
+                    <div style="display: flex; align-items: center; margin-bottom: 0.5rem; color: var(--primary-color); font-size: 0.85rem; font-weight: 600;">
+                        <img src="https://img.icons8.com/?id=143&format=png&size=14" style="filter: invert(53%) sepia(63%) saturate(3333%) hue-rotate(198deg) brightness(101%) contrast(101%); margin-right: 6px;">
+                        VibeBot Replied:
+                    </div>
+                    <div style="font-size: 0.95rem; color: var(--text-main);">
+                        {{ interaction.bot_comment }}
+                    </div>
+                </div>
+                {% endif %}
             </div>
 
             <!-- Metrics Bar -->
