@@ -548,6 +548,50 @@ class TwitterScout:
         finally:
             self._lock.release()
 
+    def engage_post(self, tweet_id: str, text: str, like: bool = True, page: Page = None) -> bool:
+        """
+        Likes and replies to a tweet in a single session.
+        """
+        if page is None:
+            # Standalone wrapper
+            if not self._lock.acquire(timeout=60): return False
+            try:
+                with sync_playwright() as p:
+                    browser = self._get_browser_context(p)
+                    page = browser.new_page()
+                    return self.engage_post(tweet_id, text, like=like, page=page)
+            finally:
+                self._lock.release()
+
+        try:
+            # Navigate if needed
+            if tweet_id not in page.url:
+                url = f"https://twitter.com/i/web/status/{tweet_id}"
+                page.goto(url)
+                page.wait_for_selector('article[data-testid="tweet"]', timeout=10000)
+
+            # 1. Like
+            if like:
+                try:
+                    if page.query_selector('button[data-testid="unlike"]'):
+                        print(f"  Tweet {tweet_id} is already liked.")
+                    else:
+                        like_button = page.wait_for_selector('button[data-testid="like"]', timeout=5000)
+                        if like_button:
+                            like_button.scroll_into_view_if_needed()
+                            like_button.click()
+                            print(f"  Clicked Like on {tweet_id}")
+                            time.sleep(1)
+                except Exception as e:
+                    print(f"  Like failed in engage_post: {e}")
+
+            # 2. Comment
+            return self.comment_post(tweet_id, text, page=page)
+
+        except Exception as e:
+            print(f"Engage Post Error: {e}")
+            return False
+
     def like_post(self, tweet_id: str, page: Page = None) -> bool:
         """
         Likes a tweet. If page is provided, uses existing session.

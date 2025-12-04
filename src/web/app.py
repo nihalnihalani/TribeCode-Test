@@ -268,8 +268,8 @@ def comment_interaction(interaction_id: int, db: Session = Depends(get_db)):
     
     success = False
     if interaction.platform == "Twitter":
-        twitter_scout.like_post(interaction.external_post_id)
-        success = twitter_scout.comment_post(interaction.external_post_id, generated_comment)
+        # Use the new atomic engage_post method to Like AND Comment in one session
+        success = twitter_scout.engage_post(interaction.external_post_id, generated_comment, like=True)
 
     if success:
         interaction.bot_comment = generated_comment
