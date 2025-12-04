@@ -207,7 +207,7 @@ def test_agent_generate_comment(mock_anthropic, mock_env):
     
     # Verify model name
     call_args = agent.client.messages.create.call_args
-    assert call_args.kwargs['model'] == "claude-3-5-haiku-20241022"
+    assert call_args.kwargs['model'] == "claude-haiku-4-5"
 
 def test_agent_no_key(monkeypatch):
     """Test agent without API key."""

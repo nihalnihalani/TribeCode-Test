@@ -33,7 +33,7 @@ def test_generate_comment_anthropic(mock_anthropic):
     assert comment == "Cool project!"
     mock_client.messages.create.assert_called_once()
     call_args = mock_client.messages.create.call_args[1]
-    assert call_args['model'] == "claude-3-5-sonnet-20241022"
+    assert call_args['model'] == "claude-haiku-4-5"
     assert "Just shipped my MVP!" in call_args['messages'][0]['content']
 
 @patch('src.web.app.twitter_scout.fetch_posts')

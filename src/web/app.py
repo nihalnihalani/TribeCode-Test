@@ -38,7 +38,7 @@ def auto_scout_loop():
             # We run them sequentially in the background thread, 
             # but triggering run_scout_task will use the parallel executor internally if applicable.
             for kw in keywords:
-                run_scout_task(platform="twitter", limit=10, query=kw)
+                run_scout_task(platform="twitter", limit=10, query=kw, auto_comment=True)
                 time.sleep(60) # Sleep 1 min between keywords
             
             # Sleep for 10 minutes before next batch
