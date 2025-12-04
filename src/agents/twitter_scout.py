@@ -670,28 +670,49 @@ class TwitterScout:
                 page.wait_for_selector('article[data-testid="tweet"]', timeout=10000)
 
             try:
-                # Try clicking the reply div first to focus
-                placeholder = page.query_selector('div[data-testid="tweetTextarea_0_label"]')
-                if placeholder: placeholder.click()
-                    
-                editor = page.wait_for_selector('div.public-DraftEditor-content', timeout=5000)
+                # Attempt to find and click the reply input
+                input_selectors = [
+                    'div[data-testid="tweetTextarea_0_label"]',
+                    'div.public-DraftEditor-content',
+                    'div[role="textbox"][aria-label="Post text"]',
+                    'div[role="textbox"]'
+                ]
                 
-                if editor:
-                    editor.click()
-                    page.keyboard.type(text, delay=50) 
-                    time.sleep(1)
+                input_found = False
+                for selector in input_selectors:
+                    try:
+                        el = page.query_selector(selector)
+                        if el and el.is_visible():
+                            el.click()
+                            input_found = True
+                            # Wait briefly for focus/expansion
+                            time.sleep(0.5)
+                            break
+                    except:
+                        continue
+                
+                if not input_found:
+                    print("  Could not find reply input area with known selectors.")
+                    return False
+
+                # Type the text
+                # We use keyboard.type to simulate real typing which triggers React events
+                page.keyboard.type(text, delay=30)
+                time.sleep(1)
                     
-                    submit_btn = page.wait_for_selector('button[data-testid="tweetButtonInline"]', timeout=5000)
-                    if submit_btn:
-                        if submit_btn.is_disabled():
-                            print("  Reply button disabled.")
-                        else:
-                            submit_btn.click()
-                            print(f"  Replied to {tweet_id}")
-                            time.sleep(3)
-                            return True
+                submit_btn = page.wait_for_selector('button[data-testid="tweetButtonInline"]', timeout=5000)
+                if submit_btn:
+                    if submit_btn.is_disabled():
+                        print("  Reply button disabled - text might not have entered.")
+                        return False
+                    else:
+                        submit_btn.click()
+                        print(f"  Replied to {tweet_id}")
+                        # Wait for post to complete (button disappears or toast appears)
+                        time.sleep(3)
+                        return True
                 else:
-                    print("  Could not find reply editor.")
+                    print("  Could not find reply submit button.")
             except Exception as e:
                 print(f"  Reply failed: {e}")
             
