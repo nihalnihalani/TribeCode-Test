@@ -31,7 +31,7 @@ class TestClaudeUpgrade(unittest.TestCase):
         # Verify Model ID
         call_args = mock_client.messages.create.call_args[1]
         print(f"Called with model: {call_args['model']}")
-        self.assertEqual(call_args['model'], "claude-3-5-haiku-20241022")
+        self.assertEqual(call_args['model'], "claude-haiku-4-5")
 
 if __name__ == '__main__':
     unittest.main()
