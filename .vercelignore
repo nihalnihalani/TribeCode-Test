@@ -1,0 +1,15 @@
+twitter_auth_data/
+twitter_auth_data_test/
+vibebot.db
+*.db
+__pycache__/
+*.pyc
+.DS_Store
+tests/
+*.md
+assets/
+debug_*.png
+.env.local
+.git/
+.gitignore
+
