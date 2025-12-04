@@ -670,52 +670,66 @@ class TwitterScout:
                 page.wait_for_selector('article[data-testid="tweet"]', timeout=10000)
 
             try:
-                # Try clicking the reply icon first (sometimes better than focusing the bottom input)
-                # This is the speech bubble icon usually
-                reply_icon = page.query_selector('button[data-testid="reply"]')
-                if reply_icon:
-                    print("  Clicking reply icon to open modal...")
-                    reply_icon.click()
-                    time.sleep(1)
-                else:
-                    # Fallback to clicking the placeholder text
-                    print("  Reply icon not found, trying placeholder...")
-                    placeholder = page.query_selector('div[data-testid="tweetTextarea_0_label"]')
-                    if placeholder: 
-                        placeholder.click()
-                    
-                editor = page.wait_for_selector('div.public-DraftEditor-content', timeout=5000)
+                # Strategy 1: Direct Inline Reply (Preferred)
+                # The input box at the bottom of the tweet detail page
+                editor_focused = False
                 
+                # Try finding the placeholder text
+                placeholder = page.query_selector('div[data-testid="tweetTextarea_0_label"]')
+                if placeholder:
+                    print("  Found inline placeholder. Clicking...")
+                    placeholder.click()
+                    editor_focused = True
+                
+                # Strategy 2: Reply Button (Modal)
+                if not editor_focused:
+                    print("  Inline placeholder not found/visible. Trying Reply button...")
+                    # Target the main tweet's reply button if possible. 
+                    # On status page, the first reply button usually belongs to the main tweet actions.
+                    reply_btn = page.query_selector('button[data-testid="reply"]')
+                    if reply_btn:
+                        reply_btn.click()
+                        time.sleep(1)
+                        editor_focused = True
+                    
+                # Wait for editor
+                editor = page.wait_for_selector('div.public-DraftEditor-content', timeout=5000)
                 if editor:
-                    print("  Editor found. Typing reply...")
-                    editor.click()
-                    # Type slowly to simulate human
-                    page.keyboard.type(text, delay=30) 
+                    if not editor_focused:
+                        editor.click() # Ensure focus
+                    
+                    time.sleep(0.5)
+                    print(f"  Typing reply: {text[:20]}...")
+                    page.keyboard.type(text, delay=50)
                     time.sleep(1)
                     
-                    # Look for the submit button - it might be 'tweetButtonInline' or just 'tweetButton' in modal
+                    # Check for button enablement
                     submit_btn = page.query_selector('button[data-testid="tweetButtonInline"]')
                     if not submit_btn:
-                         submit_btn = page.query_selector('button[data-testid="tweetButton"]')
-                         
+                        submit_btn = page.query_selector('button[data-testid="tweetButton"]')
+                        
                     if submit_btn:
+                        # Sometimes we need to trigger an input event if the button is still disabled
                         if submit_btn.is_disabled():
-                            print("  Reply button disabled. Waiting...")
-                            time.sleep(2)
+                             print("  Button disabled. Trying to trigger input event...")
+                             page.keyboard.press("Space")
+                             page.keyboard.press("Backspace")
+                             time.sleep(1)
                         
                         if not submit_btn.is_disabled():
                             submit_btn.click()
-                            print(f"  Replied to {tweet_id}")
+                            print("  Reply sent!")
                             time.sleep(3)
                             return True
                         else:
-                             print("  Reply button still disabled after typing.")
+                            print("  Reply button remains disabled.")
                     else:
                         print("  Submit button not found.")
                 else:
-                    print("  Could not find reply editor.")
+                     print("  Editor field not found.")
+                     
             except Exception as e:
-                print(f"  Reply failed: {e}")
+                 print(f"  Reply failed: {e}")
             
             return False
 
