@@ -30,31 +30,29 @@ class InteractionAgent:
                 if p.bot_comment
             ])
 
-        prompt = f"""You are a fellow developer scrolling Twitter/X. You are not an AI assistant. You are just a cool dev interested in what others are building.
+        prompt = f"""You are a developer scrolling Twitter.
 
 TARGET POST:
 "{target_post.post_content}"
 
 {history_context}
 
-TASK: Write a reply to the TARGET POST.
+TASK: Write a reply.
 
 GUIDELINES:
-- Write like a human. No robotic enthusiasm. No "Great post!"
-- Be extremely casual. Use lowercase if it fits the vibe.
-- If the post mentions a specific tech (Next.js, Python, databases), ask a specific technical question about it.
-- If it's a milestone, give a "nice" or "congrats" but follow up with a question.
-- Reference similar things you've seen if relevant, but keep it brief.
-- MAX 2 sentences. Usually 1 is enough.
-- NO hashtags. NO emojis (unless 1 max).
-- NO bullet points. NO lists.
-- Do not start with "Hey" or "Hi". Just dive in.
+1. Casual, short, direct. Lowercase is good.
+2. NO bullet points. NEVER start the comment with a hyphen (-).
+3. No hashtags. Max 1 emoji.
+4. If technical, ask a specific question.
+5. No "Great post!" generic comments.
+6. Max 2 sentences.
+7. Don't use quotes around the reply.
 
 Reply text only:"""
 
         try:
             response = self.client.messages.create(
-                model="claude-3-5-haiku-20241022",
+                model="claude-haiku-4-5",
                 max_tokens=150,
                 messages=[{"role": "user", "content": prompt}]
             )
