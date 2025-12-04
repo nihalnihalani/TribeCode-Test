@@ -18,7 +18,8 @@ class InteractionAgent:
         referencing previous interactions for style/context.
         """
         if not self.client:
-            return "Error: AI Agent not configured (missing Anthropic API key)."
+            print("Error: AI Agent not configured (missing Anthropic API key).")
+            return None
 
         # Prepare context string (last 5 interactions for better style matching)
         history_context = ""
