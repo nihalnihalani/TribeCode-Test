@@ -98,7 +98,7 @@ Reply text only:"""
             if "@tribecode" not in content.lower():
                 content += " @tribecode"
             
-            # Check if sentence is incomplete (doesn't end with punctuation)
+            # Ensure reply ends with punctuation and is complete
             if content and not content[-1] in '.!?':
                 # Find the last complete sentence
                 last_period = content.rfind('.')
@@ -106,17 +106,20 @@ Reply text only:"""
                 last_question = content.rfind('?')
                 last_sentence_end = max(last_period, last_exclamation, last_question)
                 
-                if last_sentence_end > 20:  # If we found a sentence end
+                if last_sentence_end > 20:  # If we found a sentence end, use it
                     content = content[:last_sentence_end + 1].strip()
                 else:
-                    # No sentence end found, truncate at word boundary before 140
-                    if len(content) > 140:
-                        truncated = content[:140]
-                        last_space = truncated.rfind(' ')
-                        if last_space > 20:
-                            content = content[:last_space].strip()
+                    # No sentence end found, truncate at word boundary and add punctuation
+                    target_length = 140 if len(content) > 140 else len(content)
+                    truncated = content[:target_length]
+                    last_space = truncated.rfind(' ')
+                    if last_space > 20:
+                        content = content[:last_space].strip() + '.'
+                    else:
+                        # Fallback: just add punctuation
+                        content = content.strip() + '.'
             
-            # If still too long, intelligently truncate at sentence boundary
+            # Final length check: if still too long, truncate at sentence boundary
             if len(content) > 150:
                 truncated = content[:140]
                 last_period = truncated.rfind('.')
@@ -127,10 +130,10 @@ Reply text only:"""
                 if last_sentence_end > 50:  # Only if we have a reasonable sentence
                     content = content[:last_sentence_end + 1].strip()
                 else:
-                    # Fallback: truncate at word boundary
+                    # Fallback: truncate at word boundary and add punctuation
                     last_space = truncated.rfind(' ')
                     if last_space > 50:
-                        content = content[:last_space].strip()
+                        content = content[:last_space].strip() + '.'
 
             return content
             
