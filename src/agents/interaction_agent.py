@@ -85,7 +85,7 @@ Reply text only:"""
         try:
             response = self.client.messages.create(
                 model="claude-3-haiku-20240307",
-                max_tokens=100,
+                max_tokens=80,
                 messages=[{"role": "user", "content": prompt}]
             )
             # Post-processing to ensure no leading hyphens/quotes
@@ -97,6 +97,40 @@ Reply text only:"""
             # Final safety check: ensure @tribecode is present
             if "@tribecode" not in content.lower():
                 content += " @tribecode"
+            
+            # Check if sentence is incomplete (doesn't end with punctuation)
+            if content and not content[-1] in '.!?':
+                # Find the last complete sentence
+                last_period = content.rfind('.')
+                last_exclamation = content.rfind('!')
+                last_question = content.rfind('?')
+                last_sentence_end = max(last_period, last_exclamation, last_question)
+                
+                if last_sentence_end > 20:  # If we found a sentence end
+                    content = content[:last_sentence_end + 1].strip()
+                else:
+                    # No sentence end found, truncate at word boundary before 140
+                    if len(content) > 140:
+                        truncated = content[:140]
+                        last_space = truncated.rfind(' ')
+                        if last_space > 20:
+                            content = content[:last_space].strip()
+            
+            # If still too long, intelligently truncate at sentence boundary
+            if len(content) > 150:
+                truncated = content[:140]
+                last_period = truncated.rfind('.')
+                last_exclamation = truncated.rfind('!')
+                last_question = truncated.rfind('?')
+                last_sentence_end = max(last_period, last_exclamation, last_question)
+                
+                if last_sentence_end > 50:  # Only if we have a reasonable sentence
+                    content = content[:last_sentence_end + 1].strip()
+                else:
+                    # Fallback: truncate at word boundary
+                    last_space = truncated.rfind(' ')
+                    if last_space > 50:
+                        content = content[:last_space].strip()
 
             return content
             
