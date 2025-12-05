@@ -36,54 +36,81 @@ class TwitterScout:
         """
         Attempts to log in to Twitter via Username/Password or Google.
         """
-        print("  [Login] Checking for login requirement...")
+        print(f"  [Login] Checking for login requirement... URL: {page.url}")
         
         try:
             # Check for login indicators
             content = page.content()
-            if "Sign in to X" in content or "Log in" in content:
+            if "Sign in to X" in content or "Log in" in content or "login" in page.url:
                 print("  [Login] Login screen detected.")
                 
                 # Try Standard Login first (Username/Password)
                 tw_username = os.getenv("TWITTER_USERNAME")
                 tw_password = os.getenv("TWITTER_PASSWORD")
                 
+                print(f"  [Login] Using username: {tw_username}")
+                
                 if tw_username and tw_password:
                     print(f"  [Login] Attempting standard login for {tw_username}...")
                     try:
-                        # Sometimes we need to click a "Log in" button to see the form if we are on a landing page
-                        login_button = page.query_selector('a[href="/login"]')
-                        if login_button:
-                            print("  [Login] Clicking 'Log in' link...")
-                            login_button.click()
-                            time.sleep(2)
+                        # Ensure we are on the login page if we aren't finding inputs
+                        if "login" not in page.url and "flow" not in page.url:
+                             print("  [Login] Not on login page. Navigating to https://twitter.com/i/flow/login ...")
+                             page.goto("https://twitter.com/i/flow/login")
+                             time.sleep(5)
 
                         # 1. Find Username field
                         print("  [Login] Looking for username input...")
                         user_input = None
                         try:
+                            # Try multiple common selectors
                             user_input = page.wait_for_selector('input[autocomplete="username"]', timeout=5000)
-                        except:
-                            pass
+                        except: pass
                         
                         if not user_input:
                             try:
-                                user_input = page.wait_for_selector('input[name="text"]', timeout=5000)
-                            except:
-                                pass
-                        
+                                user_input = page.wait_for_selector('input[name="text"]', timeout=2000)
+                            except: pass
+                            
+                        if not user_input:
+                            try:
+                                user_input = page.wait_for_selector('input[type="text"]', timeout=2000)
+                            except: pass
+                            
+                        if not user_input:
+                            try:
+                                user_input = page.wait_for_selector('input[data-testid="ocfEnterTextTextInput"]', timeout=2000)
+                            except: pass
+
                         if user_input:
                             print("  [Login] Entering Username...")
+                            time.sleep(1)
                             user_input.fill(tw_username)
                             user_input.press("Enter")
                             
-                            time.sleep(2)
+                            time.sleep(3) # Wait for animation
+
                             
-                            # Check for unusual activity verification
+                            # Check for unusual activity verification or Email request
                             try:
-                                ver_input = page.wait_for_selector('input[data-testid="ocfEnterTextTextInput"]', timeout=2000)
+                                # Sometimes it asks for "Phone or email"
+                                ver_input = None
+                                try:
+                                    ver_input = page.wait_for_selector('input[data-testid="ocfEnterTextTextInput"]', timeout=3000)
+                                except: pass
+                                
+                                if not ver_input:
+                                    try:
+                                         # Check if there is an input asking for email specifically
+                                         if "email" in page.content().lower():
+                                             ver_input = page.wait_for_selector('input[type="text"]', timeout=2000)
+                                    except: pass
+
                                 if ver_input:
-                                    print("  [Login] unusual activity check detected. Entering username/email again...")
+                                    print("  [Login] Verification/Email check detected. Entering username/email...")
+                                    # Try username first, if that fails we might need email from env?
+                                    # But usually it wants the same handle or the email associated.
+                                    # Let's try TWITTER_USERNAME first.
                                     ver_input.fill(tw_username)
                                     ver_input.press("Enter")
                                     time.sleep(2)
@@ -92,17 +119,25 @@ class TwitterScout:
 
                             # 2. Wait for Password field
                             print("  [Login] Waiting for Password field...")
-                            pass_input = page.wait_for_selector('input[name="password"]', timeout=5000)
+                            pass_input = None
+                            try:
+                                pass_input = page.wait_for_selector('input[name="password"]', timeout=10000)
+                            except:
+                                print("  [Login] Password field not found immediately.")
+                                # Snapshot for debug
+                                page.screenshot(path="debug_login_fail.png")
+                                print("  [Login] Saved debug_login_fail.png")
                             
                             if pass_input:
                                 print("  [Login] Entering Password...")
+                                time.sleep(1)
                                 pass_input.fill(tw_password)
                                 pass_input.press("Enter")
                                 
                                 # Wait for success
                                 print("  [Login] Waiting for authentication...")
                                 try:
-                                    page.wait_for_selector('article[data-testid="tweet"]', timeout=15000)
+                                    page.wait_for_selector('article[data-testid="tweet"]', timeout=20000)
                                     print("  [Login] Success! Tweets visible.")
                                     try:
                                         page.context.storage_state(path=os.path.join(self.user_data_dir, "twitter_state.json"))
@@ -112,6 +147,8 @@ class TwitterScout:
                                     print("  [Login] Wait for tweets timed out, but proceeding...")
                                     time.sleep(3)
                                 return
+                            else:
+                                print("  [Login] Could not find password field.")
                                 
                     except Exception as e:
                         print(f"  [Login] Standard login attempt failed: {e}")
@@ -197,19 +234,19 @@ class TwitterScout:
             page.goto("https://twitter.com/home", timeout=30000)
             time.sleep(3)
             
+            print(f"  [Login] Current URL: {page.url}")
+            
             # Check if we are on home or redirected to login
             if "login" in page.url:
                  print("  [Login] Redirected to login page.")
                  self.login(page)
-            elif page.query_selector('[data-testid="SideNav_NewTweet_Button"]') or "home" in page.url:
-                print("  [Login] Already logged in.")
+            elif page.query_selector('[data-testid="SideNav_AccountSwitcher_Button"]'):
+                print("  [Login] Already logged in (Account Switcher found).")
+            elif page.query_selector('[data-testid="SideNav_NewTweet_Button"]'):
+                print("  [Login] Already logged in (Tweet Button found).")
             else:
-                # Check for other logged-in indicators
-                if page.query_selector('[data-testid="AppTabBar_Home_Link"]'):
-                     print("  [Login] Already logged in (Home link found).")
-                else:
-                    print("  [Login] Status unclear, attempting login check...")
-                    self.login(page)
+                print("  [Login] Not logged in (Indicators missing). Starting login flow...")
+                self.login(page)
 
         except Exception as e:
             print(f"  Warning: Login check failed: {e}")
@@ -324,10 +361,8 @@ class TwitterScout:
                             img_el = tweet_el.query_selector('div[data-testid="tweetPhoto"] img')
                             if img_el: media_url = img_el.get_attribute('src')
                             
-                            # If we are skipping images, check now
-                            if media_url:
-                                print(f"  Skipping Tweet {tweet_id} (Has Image)")
-                                continue
+                            # Note: We comment on ALL posts, including those with images.
+
 
                             interaction = save_interaction(
                                 platform="Twitter",
@@ -504,14 +539,10 @@ class TwitterScout:
                             except Exception as e:
                                 print(f"  Could not extract author details: {e}")
 
-                            if has_media and auto_comment:
-                                print(f"  Skipping comment on {tweet_id} due to image/media.")
-                                # We can still like it though? User said "don't post a comment or reply"
-                                # Let's skip the whole engagement if it has media to be safe, or just comment?
-                                # "if the tweet has reference to image don't post a comment or reply"
-                                # Implementation: We will still Archive it, maybe Like it? 
-                                # Let's assume we skip comment only.
-                                auto_comment = False 
+                            # Image/media check - we engage with ALL posts now
+                            if has_media:
+                                print(f"  Tweet {tweet_id} has media. Proceeding with engagement.")
+ 
 
                             # Save/Update DB first
                             interaction = save_interaction(
@@ -707,50 +738,89 @@ class TwitterScout:
                 # The input box at the bottom of the tweet detail page
                 editor_focused = False
                 
+                # Scroll to bottom to ensure elements are loaded if needed
+                # page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
+                # time.sleep(1)
+
                 # Try finding the placeholder text
                 placeholder = page.query_selector('div[data-testid="tweetTextarea_0_label"]')
                 if placeholder:
                     print("  Found inline placeholder. Clicking...")
-                    placeholder.click()
-                    editor_focused = True
+                    try:
+                        placeholder.click()
+                        editor_focused = True
+                    except:
+                        print("  Could not click placeholder.")
                 
                 # Strategy 2: Reply Button (Modal)
                 if not editor_focused:
-                    print("  Inline placeholder not found/visible. Trying Reply button...")
+                    print("  Inline placeholder not found/visible/clickable. Trying Reply button...")
                     # Target the main tweet's reply button if possible. 
                     # On status page, the first reply button usually belongs to the main tweet actions.
-                    reply_btn = page.query_selector('button[data-testid="reply"]')
-                    if reply_btn:
-                        reply_btn.click()
-                        time.sleep(1)
-                        editor_focused = True
+                    try:
+                        reply_btn = page.query_selector('button[data-testid="reply"]')
+                        if reply_btn:
+                            reply_btn.click()
+                            time.sleep(1)
+                            editor_focused = True
+                    except: pass
                     
                 # Wait for editor
-                editor = page.wait_for_selector('div.public-DraftEditor-content', timeout=5000)
+                editor = None
+                try:
+                    editor = page.wait_for_selector('div.public-DraftEditor-content', timeout=5000)
+                except: pass
+                
                 if editor:
                     if not editor_focused:
                         editor.click() # Ensure focus
                     
                     time.sleep(0.5)
                     print(f"  Typing reply: {text[:20]}...")
-                    page.keyboard.type(text, delay=50)
+                    
+                    # Type character by character effectively
+                    # page.keyboard.type(text, delay=50)
+                    
+                    # Safer method: fill inner text if possible or use clipboard? 
+                    # Twitter editors are complex (DraftJS). Type is best.
+                    page.keyboard.type(text, delay=30)
                     time.sleep(1)
                     
                     # Check for button enablement
-                    submit_btn = page.query_selector('button[data-testid="tweetButtonInline"]')
+                    submit_btn = None
+                    # Try finding the button by testid
+                    try:
+                        submit_btn = page.query_selector('button[data-testid="tweetButtonInline"]')
+                    except: pass
+                    
                     if not submit_btn:
-                        submit_btn = page.query_selector('button[data-testid="tweetButton"]')
+                        try:
+                            submit_btn = page.query_selector('button[data-testid="tweetButton"]')
+                        except: pass
                         
                     if submit_btn:
                         # Sometimes we need to trigger an input event if the button is still disabled
+                        # We also try to scroll it into view
+                        try:
+                             submit_btn.scroll_into_view_if_needed()
+                        except: pass
+
                         if submit_btn.is_disabled():
                              print("  Button disabled. Trying to trigger input event...")
                              page.keyboard.press("Space")
+                             time.sleep(0.5)
                              page.keyboard.press("Backspace")
                              time.sleep(1)
                         
                         if not submit_btn.is_disabled():
-                            submit_btn.click()
+                            print("  Clicking submit button...")
+                            # Force click to bypass potential overlays
+                            try:
+                                submit_btn.click(force=True)
+                            except:
+                                # Fallback: execute JS click
+                                page.evaluate("(btn) => btn.click()", submit_btn)
+
                             print("  Reply sent!")
                             time.sleep(3)
                             return True
