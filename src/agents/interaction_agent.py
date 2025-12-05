@@ -74,7 +74,7 @@ GUIDELINES:
 3. No hashtags EXCEPT @tribecode.
 4. MANDATORY: You MUST include the tag "@tribecode" in your reply.
 5. If the post is technical, you can mention how Tribecode's "Auto-Learn" or "Private Inference Vault" could help, or just ask them to try the tag @tribecode.
-6. Keep it short and crispy (strictly under 240 characters).
+6. Keep it short and crispy (strictly under 140 characters).
 7. NEVER use quotes around your reply.
 8. STRICTLY FORBIDDEN: Starting the reply with a hyphen or dash.
 9. If the author is mentioned, talk TO them, not AT them.
@@ -85,7 +85,7 @@ Reply text only:"""
         try:
             response = self.client.messages.create(
                 model="claude-3-haiku-20240307",
-                max_tokens=150,
+                max_tokens=60,
                 messages=[{"role": "user", "content": prompt}]
             )
             # Post-processing to ensure no leading hyphens/quotes
@@ -95,8 +95,8 @@ Reply text only:"""
             content = content.lstrip("-").strip()
             
             # Hard enforcement of length
-            if len(content) > 240:
-                content = content[:237] + "..."
+            if len(content) > 150:
+                content = content[:147] + "..."
             
             # Final safety check: ensure @tribecode is present
             if "@tribecode" not in content.lower():
